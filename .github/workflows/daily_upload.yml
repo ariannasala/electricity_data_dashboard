@@ -20,10 +20,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install -r requirements.txt
+      - run: pip install .
 
       - name: recreate oracle wallet
-
         run:
           mkdir wallet
           echo ${{ secrets.ORACLE_WALLET }} | base64 --decode > wallet.zip
