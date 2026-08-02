@@ -1,13 +1,28 @@
 import oracledb
-import login_information as info
+import os
+
+if os.path.exists("login_information.py"):
+        from login_information import (
+            DB_DSN,
+            DB_PASSWORD,
+            DB_USER,
+            WALLET_LOCATION,
+            WALLET_PASSWORD,
+        )
+
+        os.environ["WALLET_LOCATION"] = WALLET_LOCATION
+        os.environ["DB_USER"] = DB_USER
+        os.environ["DB_PASSWORD"] = DB_PASSWORD
+        os.environ["DB_DSN"] = DB_DSN
+        os.environ["WALLET_PASSWORD"] = WALLET_PASSWORD
 
 connection=oracledb.connect(
-     config_dir=info.wallet_location,
-     user=info.user,
-     password=info.password,
-     dsn=info.cs,
-     wallet_location=info.wallet_location,
-     wallet_password=info.wallet_password)
+     config_dir=os.environ["WALLET_LOCATION"],
+     user=os.environ["DB_USER"],
+     password=os.environ["DB_PASSWORD"],
+     dsn=os.environ["DB_DSN"],
+     wallet_location=os.environ["WALLET_LOCATION"],
+     wallet_password=os.environ["WALLET_PASSWORD"])
 
 cursor = connection.cursor()
 
