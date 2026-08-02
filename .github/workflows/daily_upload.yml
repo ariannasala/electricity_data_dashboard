@@ -22,10 +22,10 @@ jobs:
 
       - run: pip install .
 
-      - name: recreate oracle wallet
-        run:
+      - name: Recreate Oracle wallet
+        run: |
           mkdir wallet
-          echo ${{ secrets.ORACLE_WALLET }} | base64 --decode > wallet.zip
+          echo "${{ secrets.ORACLE_WALLET }}" | base64 --decode > wallet.zip
           unzip wallet.zip -d wallet
 
       - name: Run ETL
