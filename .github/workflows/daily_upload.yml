@@ -23,10 +23,11 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: recreate oracle wallet
-      run:
-        mkdir wallet
-        echo ${{ secrets.ORACLE_WALLET }} | base64 --decode > wallet.zip
-        unzip wallet.zip -d wallet
+
+        run:
+          mkdir wallet
+          echo ${{ secrets.ORACLE_WALLET }} | base64 --decode > wallet.zip
+          unzip wallet.zip -d wallet
 
       - name: Run ETL
         env:
