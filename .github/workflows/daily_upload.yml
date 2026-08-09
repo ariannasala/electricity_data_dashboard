@@ -11,6 +11,7 @@ jobs:
   etl:
 
     runs-on: ubuntu-latest
+    environment: electricityenv
 
     steps:
 
@@ -23,7 +24,7 @@ jobs:
       - run: pip install .
       - name: Check password
         env:
-          WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }}
+          WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }} 
         run: |
           printf '%s' "$WALLET_PASSWORD" | wc -c
 
