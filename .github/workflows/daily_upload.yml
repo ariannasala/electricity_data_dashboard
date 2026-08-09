@@ -22,11 +22,17 @@ jobs:
 
       - run: pip install .
 
-      - name: Recreate Oracle wallet
+      - name: Decrypt Oracle wallet
+        env:
+          WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }}
         run: |
-          mkdir wallet
-          echo -n "${{ secrets.ORACLE_WALLET }}" | base64 --decode > wallet.zip
-          unzip wallet.zip -d wallet
+          openssl enc -d -aes-256-cbc -pbkdf2 \
+            -in wallet.zip.enc \
+            -out wallet.zip \
+            -pass env:WALLET_PASSWORD
+
+    mkdir -p wallet
+    unzip -q wallet.zip -d wallet
 
       - name: Run ETL
         env:
