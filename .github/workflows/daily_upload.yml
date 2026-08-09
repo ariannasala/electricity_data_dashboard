@@ -30,9 +30,8 @@ jobs:
             -in ./data/wallet.zip.enc \
             -out wallet.zip \
             -pass env:WALLET_PASSWORD
-
-    mkdir -p wallet
-    unzip -q wallet.zip -d wallet
+            mkdir -p wallet
+            unzip -q wallet.zip -d wallet
 
       - name: Run ETL
         env:
