@@ -46,6 +46,6 @@ jobs:
           ORACLE_DSN: ${{ secrets.ORACLE_DSN }}
           ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
           WALLET_LOCATION: wallet
-          WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_PASSWORD }}
+          ORACLE_WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_PASSWORD }}
         run: |
           python load_data_to_oracle.py
