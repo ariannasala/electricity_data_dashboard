@@ -15,7 +15,15 @@ client = EntsoePandasClient(api_key=api_key)
 
 
 def download_yesterday_data(country_code):
+    """
+    Downloads data from entsoe for yesterday.
+    Specifically, load, day_ahead_prices and generation. Generation is turned to the long format.
 
+    Parameters
+    -----------
+    coutry_code : str
+        The country code to download data for.
+    """
     yesterday = date.today() - timedelta(days=1)
 
     start = pd.Timestamp(
@@ -67,7 +75,3 @@ def download_yesterday_data(country_code):
     day_ahead_prices = day_ahead_prices[["timestamp", "country_code", "day_ahead_prices"]]
 
     return load, day_ahead_prices, generation_long
-
-
-if __name__ == "__main__":
-    load, day_ahead_prices, generation_long = download_yesterday_data(COUNTRY_CODE)

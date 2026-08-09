@@ -1,6 +1,3 @@
-[tool.setuptools]
-py-modules = []
-
 [project]
 name = "electricity-data-dashboard"
 version = "0.1.0"
@@ -14,3 +11,6 @@ dependencies = [
     "plotly>=6.8.0",
     "streamlit>=1.58.0",
 ]
+
+[tool.setuptools.packages.find]
+include = ["core*"]

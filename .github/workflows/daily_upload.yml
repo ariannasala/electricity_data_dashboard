@@ -48,4 +48,4 @@ jobs:
           WALLET_LOCATION: wallet
           ORACLE_WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_PASSWORD }}
         run: |
-          python load_data_to_oracle.py
+          python ./scripts/load_yesterday_data.py
