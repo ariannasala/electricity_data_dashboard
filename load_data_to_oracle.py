@@ -66,20 +66,20 @@ def main():
         )
 
         os.environ["WALLET_LOCATION"] = WALLET_LOCATION
-        os.environ["DB_USER"] = DB_USER
-        os.environ["DB_PASSWORD"] = DB_PASSWORD
-        os.environ["DB_DSN"] = DB_DSN
-        os.environ["WALLET_PASSWORD"] = WALLET_PASSWORD
+        os.environ["ORACLE_USER"] = DB_USER
+        os.environ["ORACLE_PASSWORD"] = DB_PASSWORD
+        os.environ["ORACLE_DSN"] = DB_DSN
+        os.environ["ORACLE_WALLET_PASSWORD"] = WALLET_PASSWORD
 
     load, day_ahead_prices, generation_long = download_yesterday_data("ES")
 
     connection = oracledb.connect(
         config_dir=os.environ["WALLET_LOCATION"],
-        user=os.environ["DB_USER"],
-        password=os.environ["DB_PASSWORD"],
-        dsn=os.environ["DB_DSN"],
+        user=os.environ["ORACLE_USER"],
+        password=os.environ["ORACLE_PASSWORD"],
+        dsn=os.environ["ORACLE_DSN"],
         wallet_location=os.environ["WALLET_LOCATION"],
-        wallet_password=os.environ["WALLET_PASSWORD"],
+        wallet_password=os.environ["ORACLE_WALLET_PASSWORD"],
     )
 
     cursor = connection.cursor()
