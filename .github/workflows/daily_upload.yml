@@ -21,7 +21,13 @@ jobs:
           python-version: "3.12"
 
       - run: pip install .
-      
+
+      - name: Check password
+        env:
+          WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }}
+        run: |
+          printf '%s' "$WALLET_PASSWORD" | sha256sum
+
       - name: Decrypt Oracle wallet
         env:
           WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }}
