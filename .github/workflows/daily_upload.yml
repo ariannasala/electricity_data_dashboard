@@ -27,7 +27,7 @@ jobs:
           WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }}
         run: |
           openssl enc -d -aes-256-cbc -pbkdf2 \
-            -in wallet.zip.enc \
+            -in ./data/wallet.zip.enc \
             -out wallet.zip \
             -pass env:WALLET_PASSWORD
 
