@@ -1,9 +1,13 @@
 from datetime import datetime, date, timedelta
 from entsoe import EntsoePandasClient
 import pandas as pd
+import os
 
-with open("token.txt", "r") as f:
-    api_key = f.read()
+if os.path.exists("token.txt"):
+    with open("token.txt", "r") as f:
+        api_key = f.read()
+else:
+    api_key = os.environ["ENTSOE_API_KEY"]
 
 
 COUNTRY_CODE = "ES"
