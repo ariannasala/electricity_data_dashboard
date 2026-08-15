@@ -3,15 +3,8 @@ from entsoe import EntsoePandasClient
 import pandas as pd
 import os
 
-if os.path.exists("token.txt"):
-    with open("token.txt", "r") as f:
-        api_key = f.read()
-else:
-    api_key = os.environ["ENTSOE_API_KEY"]
-
-
-COUNTRY_CODE = "ES"
-client = EntsoePandasClient(api_key=api_key)
+COUNTRY_CODE = os.environ["COUNTRY_CODE"]
+client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
 
 
 def download_yesterday_data(country_code):

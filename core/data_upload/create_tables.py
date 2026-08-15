@@ -14,8 +14,9 @@ def create_table(cursor, data, table_name):
         
     try:
         cursor.execute(f"DROP TABLE {table_name}")
+        print (f"Table {table_name} dropped.")
     except:
-        pass
+        print (f"Table {table_name} cannot be dropped - probably it does not exist.")
     database_lines = ", ".join(database_lines)
     cursor.execute(f"""
                         CREATE TABLE {table_name} (

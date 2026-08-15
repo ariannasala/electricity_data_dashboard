@@ -1,0 +1,13 @@
+services:
+  uploader:
+    build: .
+    entrypoint: ["python", "scripts/load_yesterday_data.py"]
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      ORACLE_USER: ${ORACLE_USER}
+      WALLET_LOCATION: wallet
+      ORACLE_WALLET_PASSWORD: ${ORACLE_WALLET_PASSWORD}
+      ORACLE_DSN: ${ORACLE_DSN}
+      ENTSOE_API_KEY: ${ENTSOE_API_KEY}
+      COUNTRY_CODE: ${COUNTRY_CODE}
+      WALLET_PASSWORD: ${WALLET_PASSWORD}

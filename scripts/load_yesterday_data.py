@@ -5,21 +5,6 @@ import oracledb
 from core.data_upload.download_yesterday_data import download_yesterday_data
 from core.data_upload.load_data_to_oracle import load_data_to_oracle
 
-if os.path.exists("./scripts/login_information.py"):
-    from login_information import (
-        DB_DSN,
-        DB_PASSWORD,
-        DB_USER,
-        WALLET_LOCATION,
-        WALLET_PASSWORD,
-    )
-
-    os.environ["WALLET_LOCATION"] = WALLET_LOCATION
-    os.environ["ORACLE_USER"] = DB_USER
-    os.environ["ORACLE_PASSWORD"] = DB_PASSWORD
-    os.environ["ORACLE_DSN"] = DB_DSN
-    os.environ["ORACLE_WALLET_PASSWORD"] = WALLET_PASSWORD
-
 load, day_ahead_prices, generation_long = download_yesterday_data("ES")
 
 connection = oracledb.connect(
