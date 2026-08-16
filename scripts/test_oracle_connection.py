@@ -1,14 +1,6 @@
-import oracledb
-import os
+from src.oracle_connection import create_oracle_connection
 
-
-connection=oracledb.connect(
-     config_dir=os.environ["WALLET_LOCATION"],
-     user=os.environ["ORACLE_USER"],
-     password=os.environ["ORACLE_PASSWORD"],
-     dsn=os.environ["ORACLE_DSN"],
-     wallet_location=os.environ["WALLET_LOCATION"],
-     wallet_password=os.environ["ORACLE_WALLET_PASSWORD"])
+connection=create_oracle_connection()
 
 cursor = connection.cursor()
 

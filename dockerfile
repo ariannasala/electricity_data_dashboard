@@ -2,7 +2,7 @@ FROM python:3.13
 WORKDIR /usr/local/app
 
 # Copy in the source code
-COPY core ./core
+COPY src ./src
 COPY scripts ./scripts
 COPY data ./data
 
