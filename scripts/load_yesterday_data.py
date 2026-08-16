@@ -5,7 +5,7 @@ import oracledb
 from core.data_upload.download_yesterday_data import download_yesterday_data
 from core.data_upload.load_data_to_oracle import load_data_to_oracle
 
-load, day_ahead_prices, generation_long = download_yesterday_data("ES")
+load, day_ahead_prices, generation_long = download_yesterday_data(os.environ["COUNTRY_CODE"])
 
 connection = oracledb.connect(
     config_dir=os.environ["WALLET_LOCATION"],

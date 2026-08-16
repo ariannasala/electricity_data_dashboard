@@ -47,5 +47,6 @@ jobs:
           ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
           WALLET_LOCATION: wallet
           ORACLE_WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_PASSWORD }}
+          COUNTRY_CODE: "ES"
         run: |
           python ./scripts/load_yesterday_data.py

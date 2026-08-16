@@ -1,9 +1,9 @@
-from datetime import datetime, date, timedelta
-from entsoe import EntsoePandasClient
-import pandas as pd
 import os
+from datetime import datetime, timedelta, timezone
 
-COUNTRY_CODE = os.environ["COUNTRY_CODE"]
+import pandas as pd
+from entsoe import EntsoePandasClient
+
 client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
 
 
@@ -17,14 +17,24 @@ def download_yesterday_data(country_code):
     coutry_code : str
         The country code to download data for.
     """
-    yesterday = date.today() - timedelta(days=1)
+    yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
 
     start = pd.Timestamp(
-        datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0),
+            year = yesterday.year,
+            month = yesterday.month,
+            day = yesterday.day,
+            hour = 0,
+            minute = 0,
+            second = 0,
         tz="Europe/Brussels",
     )
     end = pd.Timestamp(
-        datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59),
+            year = yesterday.year,
+            month = yesterday.month,
+            day = yesterday.day,
+            hour = 23,
+            minute = 59,
+            second = 59,
         tz="Europe/Brussels",
     )
 
@@ -35,10 +45,12 @@ def download_yesterday_data(country_code):
     )
     generation = client.query_generation(country_code, start=start, end=end)
 
+    # add country code to table
     load["country_code"] = country_code
     day_ahead_prices["country_code"] = country_code
     generation["country_code"] = country_code
 
+    # add timestamp column
     load["timestamp"] = load.index
     day_ahead_prices["timestamp"] = day_ahead_prices.index
     generation["timestamp"] = generation.index

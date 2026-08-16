@@ -16,4 +16,5 @@ This gets the data from the etso-e API and loads it to an Oracle database
     - ENTSOE_API_KEY
     - COUNTRY_CODE: entso-e country code for which to 
 
-- Do ```docker compose up uploader--build-arg ENCRIPTING_PASSWORD=<encripting_password_for_the_wallet>```
+- Do ```docker compose build --build-arg ENCRIPTING_PASSWORD=<encripting_password_for_the_wallet>```
+- You can now run ```docker compose up``` to upload yesterday's data to Oracle
