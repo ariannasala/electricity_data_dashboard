@@ -13,3 +13,4 @@ wheels/
 *.env
 login_information.py
 token.txt
+wallet

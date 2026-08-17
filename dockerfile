@@ -5,10 +5,11 @@ WORKDIR /usr/local/app
 COPY src ./src
 COPY scripts ./scripts
 COPY data ./data
+COPY dashboard.py .
 
 # Install the application dependencies
 COPY pyproject.toml .
-RUN pip install --no-cache-dir .
+RUN pip install .
 
 ENV ORACLE_PASSWORD="${ORACLE_PASSWORD}"
 ENV ORACLE_USER="${ORACLE_USER}"
