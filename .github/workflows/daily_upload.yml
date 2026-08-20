@@ -16,37 +16,14 @@ jobs:
     steps:
 
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: pip install .
-      - name: Check password
-        env:
-          WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }} 
-        run: |
-          printf '%s' "$WALLET_PASSWORD" | wc -c
-
-      - name: Decrypt Oracle wallet
-        env:
-          WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_ENCRYPTION_PASSWORD }}
-        run: |
-          openssl enc -d -aes-256-cbc -pbkdf2 \
-            -in ./data/wallet.zip.enc \
-            -out wallet.zip \
-            -pass env:WALLET_PASSWORD
-          mkdir -p wallet
-          unzip -q wallet.zip -d wallet
-
       - name: Run ETL
         env:
           ORACLE_USER: ${{ secrets.ORACLE_USER }}
           ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD }}
           ORACLE_DSN: ${{ secrets.ORACLE_DSN }}
           ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
-          WALLET_LOCATION: wallet
+          WALLET_ENCRIPTING_PASSWORD: ${{ secrets.WALLET_ENCRIPTING_PASSWORD }}
           ORACLE_WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_PASSWORD }}
           COUNTRY_CODE: "ES"
         run: |
-          python ./scripts/load_yesterday_data.py
+          docker compose up uploader

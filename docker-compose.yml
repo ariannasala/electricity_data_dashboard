@@ -10,19 +10,12 @@ services:
       ORACLE_DSN: ${ORACLE_DSN}
       ENTSOE_API_KEY: ${ENTSOE_API_KEY}
       COUNTRY_CODE: ${COUNTRY_CODE}
+      WALLET_ENCRIPTING_PASSWORD: ${WALLET_ENCRIPTING_PASSWORD}
   
   dashboard:
     build: .
     ports:
       - 8501:8501
-    environment:
-      environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
-      ORACLE_USER: ${ORACLE_USER}
-      WALLET_LOCATION: wallet
-      ORACLE_WALLET_PASSWORD: ${ORACLE_WALLET_PASSWORD}
-      ORACLE_DSN: ${ORACLE_DSN}
-      COUNTRY_CODE: ${COUNTRY_CODE}
     volumes:
       - ./src:/app/src
     entrypoint: ["streamlit", "run", "dashboard.py"]

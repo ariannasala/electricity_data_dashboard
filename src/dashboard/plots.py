@@ -11,9 +11,10 @@ def create_plots(load, day_ahead_prices, generation):
         x="TIMESTAMP", y="DAY_AHEAD_PRICES", kind="line", ax=day_ahead_prices_ax
     )
 
-    generation_figure, generation_ax = plt.subplots(figsize=(20, 10))
+    generation_figure, generation_ax = plt.subplots(figsize= (10, 8))
     generation.plot.area(x="TIMESTAMP", ax=generation_ax)
-    plt.tight_layout()
+    legend = generation_ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncols=3)
+    plt.tight_layout(rect=(0, 0.15, 1, 1))
 
 
     return load_figure, day_ahead_prices_figure, generation_figure

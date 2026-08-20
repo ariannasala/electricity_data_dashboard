@@ -1,48 +1,54 @@
 import os
 
+from src.dashboard.plots import create_plots
+from src.etl.read_data_from_oracle import get_available_dates, get_and_trasform_data
+from src.oracle_connection import create_oracle_connection
+
 import streamlit as st
 
-from src.dashboard.dashboard import create_plots
-from src.etl.read_data_from_oracle import get_available_dates, read_data_from_oracle
-from src.oracle_connection import create_oracle_connection
+st.set_page_config(layout="wide")
+
+## set environment variables
+os.environ["ORACLE_PASSWORD"] = st.secrets["ORACLE_PASSWORD"]
+os.environ["ORACLE_USER"] = st.secrets["ORACLE_USER"]
+os.environ["ORACLE_WALLET_PASSWORD"] = st.secrets["ORACLE_WALLET_PASSWORD"]
+os.environ["ORACLE_DSN"] = st.secrets["ORACLE_DSN"]
+os.environ["ENTSOE_API_KEY"] = st.secrets["ENTSOE_API_KEY"]
+os.environ["COUNTRY_CODE"] = st.secrets["COUNTRY_CODE"]
+os.environ["WALLET_ENCRIPTING_PASSWORD"] = st.secrets["WALLET_ENCRIPTING_PASSWORD"]
 
 connection = create_oracle_connection()
 
+# select date
 available_dates = get_available_dates(connection, "load_raw")
 last_available_date = available_dates[-1]
-
+st.title("Electricity Data Dashboard")
 selected_date = st.selectbox("Select a date", available_dates)
 
-load = read_data_from_oracle(connection, "load_raw", selected_date)
-day_ahead_prices = read_data_from_oracle(
-    connection, "day_ahead_prices_raw", selected_date
-)
-generation = read_data_from_oracle(
-    connection, 
-    "generation_raw", 
-    selected_date)
+### get data from database + calculate statistics
 
-generation["SOURCE"] = generation["GENERATION_TYPE"] + " " + generation["GENERATION_SOURCE"]
+load, day_ahead_prices, generation_pivot = get_and_trasform_data(connection, selected_date)
 
-generation_pivot = generation.pivot(index="TIMESTAMP", columns="SOURCE", values="GENERATION").reset_index()
-
-
-st.write(generation_pivot)
 load_figure, day_ahead_prices_figure, generation_figure = create_plots(
-    load, day_ahead_prices, generation_pivot
-)
+    load, day_ahead_prices, generation_pivot)
 
-st.title("Electricity Data Dashboard")
+## show graphs
 st.markdown(f"Data for {selected_date}, country : {os.environ['COUNTRY_CODE']}")
 
-st.subheader("Load")
+col1, col2 = st.columns([0.67, 0.33])
+subcol1, subcol2 = col1.columns(2)
 
-st.pyplot(load_figure)
+subcol1.subheader("Load")
 
-st.subheader("Day Ahead Prices")
+subcol1.pyplot(load_figure)
 
-st.pyplot(day_ahead_prices_figure)
+subcol2.subheader("Day Ahead Prices")
 
-st.subheader("Generation")
+subcol2.pyplot(day_ahead_prices_figure)
 
-st.pyplot(generation_figure)
+col1.subheader("Generation")
+
+col1.pyplot(generation_figure, width='stretch')
+
+##show statistics
+col2.subheader("Price statistics")

@@ -1,6 +1,11 @@
+from datetime import datetime, timedelta, timezone
+
 from src.etl.create_tables import create_table
-from src.etl.download_yesterday_data import download_yesterday_data
+from src.etl.download_electricity_data import download_yesterday_data
 from src.oracle_connection import create_oracle_connection
+
+yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
+
 
 load, day_ahead_prices, generation_long = download_yesterday_data("ES")
 

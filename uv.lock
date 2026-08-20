@@ -397,6 +397,7 @@ name = "electricity-data-dashboard"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "cryptography" },
     { name = "entsoe-py" },
     { name = "matplotlib" },
     { name = "oracledb" },
@@ -406,6 +407,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cryptography", specifier = ">=50.0.0" },
     { name = "entsoe-py", specifier = ">=0.8.0" },
     { name = "matplotlib", specifier = ">=3.11.0" },
     { name = "oracledb", specifier = ">=4.0.2" },

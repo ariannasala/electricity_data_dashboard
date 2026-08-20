@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 import pandas as pd
 from entsoe import EntsoePandasClient
@@ -7,31 +7,44 @@ from entsoe import EntsoePandasClient
 client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
 
 
-def download_yesterday_data(country_code):
+def download_electricity_data(country_code: str, start_date: datetime, end_date: datetime):
     """
-    Downloads data from entsoe for yesterday.
+    Downloads data from entsoe between start_date and end_date.
     Specifically, load, day_ahead_prices and generation. Generation is turned to the long format.
 
     Parameters
     -----------
     coutry_code : str
         The country code to download data for.
+    start_date : datetime
+        The start date to download data from.
+    end_date : datetime
+        The end date to download data from.
+
+    Returns
+    -----------
+    load : pd.DataFrame
+        The load data.
+    day_ahead_prices : pd.DataFrame
+        The day ahead prices.
+    generation : pd.DataFrame
+        The generation data.
     """
-    yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
+
 
     start = pd.Timestamp(
-            year = yesterday.year,
-            month = yesterday.month,
-            day = yesterday.day,
+            year = start_date.year,
+            month = start_date.month,
+            day = start_date.day,
             hour = 0,
             minute = 0,
             second = 0,
         tz="Europe/Brussels",
     )
     end = pd.Timestamp(
-            year = yesterday.year,
-            month = yesterday.month,
-            day = yesterday.day,
+            year = end_date.year,
+            month = end_date.month,
+            day = end_date.day,
             hour = 23,
             minute = 59,
             second = 59,
