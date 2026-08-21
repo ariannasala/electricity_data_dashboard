@@ -5,7 +5,6 @@ from pathlib import Path
 import io
 import zipfile
 
-
 import oracledb
 
 def prepare_oracle_wallet() -> Path:

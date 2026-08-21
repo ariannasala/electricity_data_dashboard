@@ -11,8 +11,5 @@ wheels/
 
 # passwords and connection strings
 *.env
-login_information.py
-token.txt
-wallet
 .streamlit/secrets.toml
 scripts/encrypt_wallet.py

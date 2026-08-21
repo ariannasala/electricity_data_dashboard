@@ -4,7 +4,6 @@ from datetime import datetime
 import pandas as pd
 from entsoe import EntsoePandasClient
 
-client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
 
 
 def download_electricity_data(country_code: str, start_date: datetime, end_date: datetime):
@@ -30,6 +29,7 @@ def download_electricity_data(country_code: str, start_date: datetime, end_date:
     generation : pd.DataFrame
         The generation data.
     """
+    client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
 
 
     start = pd.Timestamp(
