@@ -1,10 +1,14 @@
 import os
 
-from src.dashboard.plots import create_plots
-from src.etl.read_data_from_oracle import get_available_dates, get_and_trasform_data
-from src.oracle_connection import create_oracle_connection
-
 import streamlit as st
+
+from src.dashboard.plots import create_plots
+from src.etl.read_data_from_oracle import (
+    get_and_trasform_data,
+    get_available_countries,
+    get_available_dates,
+)
+from src.oracle_connection import create_oracle_connection
 
 st.set_page_config(layout="wide")
 
@@ -14,20 +18,22 @@ os.environ["ORACLE_USER"] = st.secrets["ORACLE_USER"]
 os.environ["ORACLE_WALLET_PASSWORD"] = st.secrets["ORACLE_WALLET_PASSWORD"]
 os.environ["ORACLE_DSN"] = st.secrets["ORACLE_DSN"]
 os.environ["ENTSOE_API_KEY"] = st.secrets["ENTSOE_API_KEY"]
-os.environ["COUNTRY_CODE"] = st.secrets["COUNTRY_CODE"]
 os.environ["WALLET_ENCRIPTING_PASSWORD"] = st.secrets["WALLET_ENCRIPTING_PASSWORD"]
 
 connection = create_oracle_connection()
+st.title("Electricity Data Dashboard")
 
+#select country
+available_countries = get_available_countries(connection, "load_raw")
+selected_country = st.selectbox("Select a country", available_countries)
 # select date
 available_dates = get_available_dates(connection, "load_raw")
 last_available_date = available_dates[-1]
-st.title("Electricity Data Dashboard")
 selected_date = st.selectbox("Select a date", available_dates)
 
 ### get data from database + calculate statistics
 
-load, day_ahead_prices, generation_pivot = get_and_trasform_data(connection, selected_date)
+load, day_ahead_prices, generation_pivot = get_and_trasform_data(connection, selected_date, selected_country)
 
 load_figure, day_ahead_prices_figure, generation_figure = create_plots(
     load, day_ahead_prices, generation_pivot)

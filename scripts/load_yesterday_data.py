@@ -1,8 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
 
-import pandas as pd
-
 from src.etl.download_electricity_data import download_electricity_data
 from src.etl.load_data_to_oracle import load_data_to_oracle
 from src.oracle_connection import create_oracle_connection

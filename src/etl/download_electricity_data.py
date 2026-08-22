@@ -6,15 +6,15 @@ from entsoe import EntsoePandasClient
 
 
 
-def download_electricity_data(country_code: str, start_date: datetime, end_date: datetime):
+def download_electricity_data(country_codes: list[str], start_date: datetime, end_date: datetime):
     """
     Downloads data from entsoe between start_date and end_date.
     Specifically, load, day_ahead_prices and generation. Generation is turned to the long format.
 
     Parameters
     -----------
-    coutry_code : str
-        The country code to download data for.
+    coutry_code : list[str] | str
+        List of country code to download data for - or a single country code
     start_date : datetime
         The start date to download data from.
     end_date : datetime
@@ -29,6 +29,9 @@ def download_electricity_data(country_code: str, start_date: datetime, end_date:
     generation : pd.DataFrame
         The generation data.
     """
+    if isinstance(country_codes, str):
+        country_codes = [country_codes]
+        
     client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
 
 
@@ -51,17 +54,30 @@ def download_electricity_data(country_code: str, start_date: datetime, end_date:
         tz="Europe/Brussels",
     )
 
-    load = client.query_load(country_code, start=start, end=end)
-    day_ahead_prices = pd.DataFrame(
-        client.query_day_ahead_prices(country_code, start=start, end=end),
-        columns=["day_ahead_prices"],
-    )
-    generation = client.query_generation(country_code, start=start, end=end)
+    total_loads = []
+    total_day_ahead_prices = []
+    total_generation = []
 
-    # add country code to table
-    load["country_code"] = country_code
-    day_ahead_prices["country_code"] = country_code
-    generation["country_code"] = country_code
+    for country_code in country_codes:
+        load = client.query_load(country_code, start=start, end=end)
+        day_ahead_prices = pd.DataFrame(
+            client.query_day_ahead_prices(country_code, start=start, end=end),
+            columns=["day_ahead_prices"],
+        )
+        generation = client.query_generation(country_code, start=start, end=end)
+
+        # add country code to table
+        load["country_code"] = country_code
+        day_ahead_prices["country_code"] = country_code
+        generation["country_code"] = country_code
+
+        total_loads.append(load)
+        total_day_ahead_prices.append(day_ahead_prices)
+        total_generation.append(generation)
+
+    load = pd.concat(total_loads)
+    day_ahead_prices = pd.concat(total_day_ahead_prices)
+    generation = pd.concat(total_generation)
 
     # add timestamp column
     load["timestamp"] = load.index

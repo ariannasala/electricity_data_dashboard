@@ -26,8 +26,4 @@ jobs:
           ORACLE_WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_PASSWORD }}
           COUNTRY_CODE: "ES"
         run: |
-          docker compose up uploader
-      - name: Send Notification on Failure
-        if: failure()
-        run: |
-          echo "🚨 The Docker container exited with a non-zero status code!"
+          docker compose up --abort-on-container-exit --exit-code-from uploader uploader
