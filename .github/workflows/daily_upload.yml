@@ -27,3 +27,7 @@ jobs:
           COUNTRY_CODE: "ES"
         run: |
           docker compose up uploader
+      - name: Send Notification on Failure
+        if: failure()
+        run: |
+          echo "🚨 The Docker container exited with a non-zero status code!"
