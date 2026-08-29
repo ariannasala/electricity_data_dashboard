@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timedelta, timezone
-import pandas as pd
 
 from src.etl.create_tables import create_table
 from src.etl.download_electricity_data import download_electricity_data

@@ -1,11 +1,12 @@
 # database.py
-from cryptography.fernet import Fernet
-import os
-from pathlib import Path
 import io
+import os
 import zipfile
+from pathlib import Path
 
 import oracledb
+from cryptography.fernet import Fernet
+
 
 def prepare_oracle_wallet() -> Path:
     encrypted_wallet_path = Path("data/wallet.zip.enc")

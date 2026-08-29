@@ -9,6 +9,8 @@ def calculate_price_statistics(prices, generation_data):
 
     groupby = prices.groupby(["country_code", "day"])[["day_ahead_prices"]]
 
+    average = groupby.mean()["day_ahead_prices"].rename("average")
+
     maximum = groupby.max()["day_ahead_prices"].rename("maximum")
     minimum = groupby.min()["day_ahead_prices"].rename("minimum")
 
@@ -75,7 +77,8 @@ def calculate_price_statistics(prices, generation_data):
     ).rename("wind_capture_price")
 
     dataframe = pd.concat(
-        [
+        [   
+            average,
             maximum,
             minimum,
             standard_deviation,
@@ -96,6 +99,7 @@ def calculate_price_statistics(prices, generation_data):
     final_dataframe = dataframe.reset_index().rename(columns={"day": "timestamp"})[[
         "timestamp",
         "country_code",
+        "average",
         "maximum",
         "minimum",
         "standard_deviation",

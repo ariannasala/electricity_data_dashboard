@@ -5,7 +5,6 @@ import pandas as pd
 from entsoe import EntsoePandasClient
 
 
-
 def download_electricity_data(country_codes: list[str], start_date: datetime, end_date: datetime):
     """
     Downloads data from entsoe between start_date and end_date.
@@ -31,7 +30,7 @@ def download_electricity_data(country_codes: list[str], start_date: datetime, en
     """
     if isinstance(country_codes, str):
         country_codes = [country_codes]
-        
+
     client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
 
 
@@ -84,6 +83,11 @@ def download_electricity_data(country_codes: list[str], start_date: datetime, en
     day_ahead_prices["timestamp"] = day_ahead_prices.index
     generation["timestamp"] = generation.index
 
+    load["timestamp"] = pd.to_datetime(load["timestamp"], utc = True)
+    day_ahead_prices["timestamp"] = pd.to_datetime(day_ahead_prices["timestamp"], utc = True)
+    generation["timestamp"] = pd.to_datetime(generation["timestamp"], utc = True)
+
+
     generation_long = (
         generation.set_index(["timestamp", "country_code"]).stack([0, 1]).reset_index()
     )
@@ -97,6 +101,7 @@ def download_electricity_data(country_codes: list[str], start_date: datetime, en
         }
     )
     generation_long = generation_long[["timestamp", "country_code", "generation_source", "generation_type", "generation"]]
+    generation_long = generation_long.fillna(0)
     load = load.rename(
         columns={
             "timestamp": "timestamp",

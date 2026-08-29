@@ -1,17 +1,23 @@
+FROM ghcr.io/astral-sh/uv:latest AS uv_bin
+
 FROM python:3.13
 WORKDIR /usr/local/app
 
+COPY --from=uv_bin /uv /uvx /bin/
+
+# Install the application dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv pip install --system -r pyproject.toml
+
+
 # Copy in the source code
 COPY src ./src
-COPY scripts ./scripts
+COPY scripts/load_yesterday_data.py ./
 COPY data ./data
 COPY dashboard.py .
 COPY .streamlit ./.streamlit
 
-# Install the application dependencies
-COPY pyproject.toml .
-RUN pip install .
-
+# set environment variables
 ENV ORACLE_PASSWORD="${ORACLE_PASSWORD}"
 ENV ORACLE_USER="${ORACLE_USER}"
 ENV WALLET_LOCATION="wallet"

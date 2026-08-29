@@ -1,4 +1,6 @@
 import pandas as pd
+
+
 def create_table(cursor, data, table_name):
     """
     Creates a table in the database.

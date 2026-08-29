@@ -7,6 +7,7 @@ from src.etl.read_data_from_oracle import (
     get_and_trasform_data,
     get_available_countries,
     get_available_dates,
+    read_data_from_oracle,
 )
 from src.oracle_connection import create_oracle_connection
 
@@ -23,23 +24,30 @@ os.environ["WALLET_ENCRIPTING_PASSWORD"] = st.secrets["WALLET_ENCRIPTING_PASSWOR
 connection = create_oracle_connection()
 st.title("Electricity Data Dashboard")
 
-#select country
+# select country
 available_countries = get_available_countries(connection, "load_raw")
 selected_country = st.selectbox("Select a country", available_countries)
 # select date
 available_dates = get_available_dates(connection, "load_raw")
-last_available_date = available_dates[-1]
-selected_date = st.selectbox("Select a date", available_dates)
+last_available_date = available_dates[0]
+selected_date = st.date_input("Select a date", last_available_date, min_value = available_dates[-1], max_value = available_dates[0])
 
 ### get data from database + calculate statistics
 
-load, day_ahead_prices, generation_pivot = get_and_trasform_data(connection, selected_date, selected_country)
+load, day_ahead_prices, generation_pivot = get_and_trasform_data(
+    connection, selected_date, selected_country
+)
+
+
+if len(load) == 0 or load is None or len(day_ahead_prices) == 0 or day_ahead_prices is None or len(generation_pivot) == 0 or generation_pivot is None:
+    st.error("No data available for this date. Please select another date.")
+    st.stop()
 
 load_figure, day_ahead_prices_figure, generation_figure = create_plots(
-    load, day_ahead_prices, generation_pivot)
+    load, day_ahead_prices, generation_pivot
+)
 
 ## show graphs
-st.markdown(f"Data for {selected_date}, country : {os.environ['COUNTRY_CODE']}")
 
 col1, col2 = st.columns([0.67, 0.33])
 subcol1, subcol2 = col1.columns(2)
@@ -54,7 +62,17 @@ subcol2.pyplot(day_ahead_prices_figure)
 
 col1.subheader("Generation")
 
-col1.pyplot(generation_figure, width='stretch')
+col1.pyplot(generation_figure, width="stretch")
 
 ##show statistics
 col2.subheader("Price statistics")
+
+statistics = read_data_from_oracle(
+    connection, "prices_statistics", selected_date, selected_country
+)
+if len(statistics) == 0 or statistics is None:
+    col2.write("No statistics available for this date and country.")
+else:
+    statistics_to_show = statistics.round(2).T
+
+    col2.write(statistics_to_show)
