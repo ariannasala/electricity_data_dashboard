@@ -1,11 +1,18 @@
 import pandas as pd
+from src.schemas import COUNTRIES, COUNTRY_CODES
 
 MISSING_VALUES = -99999
 
 def calculate_price_statistics(prices, generation_data):
 
-    day = pd.to_datetime(prices["timestamp"]).dt.date
-    prices["day"] = day
+    prices["day"] = pd.NA
+    for country_code, country_prices in prices.groupby("country_code"):
+
+        datetime = pd.to_datetime(country_prices["timestamp"], utc = True)
+        timezone_name = COUNTRIES[COUNTRY_CODES[country_code]].timezone
+        timestamp_right_zone = datetime.dt.tz_convert(timezone_name)
+        day = timestamp_right_zone.dt.date
+        prices.loc[country_prices.index, "day"] = day
 
     groupby = prices.groupby(["country_code", "day"])[["day_ahead_prices"]]
 

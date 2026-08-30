@@ -19,4 +19,3 @@ def test_generation_data_with_glitch_is_filled():
     assert np.isclose(pivoted_data["Solar"].iloc[1], (15000 + 14000) / 2)
     assert np.isclose(pivoted_data["Wind"].iloc[1], (10000+9000) / 2)
 
-

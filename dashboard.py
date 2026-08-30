@@ -32,14 +32,16 @@ available_dates = get_available_dates(connection, "load_raw")
 last_available_date = available_dates[0]
 selected_date = st.date_input("Select a date", last_available_date, min_value = available_dates[-1], max_value = available_dates[0])
 
-### get data from database + calculate statistics
+### get data + statistics from database
 
 load, day_ahead_prices, generation_pivot = get_and_trasform_data(
     connection, selected_date, selected_country
 )
+statistics = read_data_from_oracle(
+    connection, "prices_statistics", selected_date, selected_country
+)
 
-
-if len(load) == 0 or load is None or len(day_ahead_prices) == 0 or day_ahead_prices is None or len(generation_pivot) == 0 or generation_pivot is None:
+if len(load) < 24 or load is None or len(day_ahead_prices) < 24 or day_ahead_prices is None or len(generation_pivot) < 24 or generation_pivot is None:
     st.error("No data available for this date. Please select another date.")
     st.stop()
 
@@ -67,9 +69,7 @@ col1.pyplot(generation_figure, width="stretch")
 ##show statistics
 col2.subheader("Price statistics")
 
-statistics = read_data_from_oracle(
-    connection, "prices_statistics", selected_date, selected_country
-)
+
 if len(statistics) == 0 or statistics is None:
     col2.write("No statistics available for this date and country.")
 else:

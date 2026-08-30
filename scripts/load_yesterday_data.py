@@ -10,11 +10,11 @@ if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets
     os.environ["ENTSOE_API_KEY"] = secrets["ENTSOE_API_KEY"]
 
-country_codes = ["FR", "ES"]
+countries = ["France", "Spain"]
 
 end_date = datetime.now(timezone.utc).date()-timedelta(days=1)
 start_date = end_date
-load, day_ahead_prices, generation_long = download_electricity_data(country_codes, start_date = start_date, end_date = end_date)
+load, day_ahead_prices, generation_long = download_electricity_data(countries, start_date = start_date, end_date = end_date)
 print ("data downloaded")
 
 connection = create_oracle_connection()

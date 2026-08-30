@@ -4,8 +4,11 @@ from datetime import datetime
 import pandas as pd
 from entsoe import EntsoePandasClient
 
+from src.schemas import COUNTRIES
 
-def download_electricity_data(country_codes: list[str], start_date: datetime, end_date: datetime):
+class DownloadError(Exception):
+    pass
+def download_electricity_data(countries: list[str], start_date: datetime, end_date: datetime):
     """
     Downloads data from entsoe between start_date and end_date.
     Specifically, load, day_ahead_prices and generation. Generation is turned to the long format.
@@ -28,43 +31,59 @@ def download_electricity_data(country_codes: list[str], start_date: datetime, en
     generation : pd.DataFrame
         The generation data.
     """
-    if isinstance(country_codes, str):
-        country_codes = [country_codes]
+    if isinstance(countries, str):
+        countries = [countries]
+
+    for country in countries:
+        if country not in COUNTRIES:
+            raise ValueError(f"Country {country} not found in COUNTRIES")
 
     client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
-
-
-    start = pd.Timestamp(
-            year = start_date.year,
-            month = start_date.month,
-            day = start_date.day,
-            hour = 0,
-            minute = 0,
-            second = 0,
-        tz="Europe/Brussels",
-    )
-    end = pd.Timestamp(
-            year = end_date.year,
-            month = end_date.month,
-            day = end_date.day,
-            hour = 23,
-            minute = 59,
-            second = 59,
-        tz="Europe/Brussels",
-    )
 
     total_loads = []
     total_day_ahead_prices = []
     total_generation = []
 
-    for country_code in country_codes:
-        load = client.query_load(country_code, start=start, end=end)
-        day_ahead_prices = pd.DataFrame(
-            client.query_day_ahead_prices(country_code, start=start, end=end),
-            columns=["day_ahead_prices"],
+    for country in countries:
+        country_code = COUNTRIES[country].code
+        timezone = COUNTRIES[country].timezone
+        start = pd.Timestamp(
+                    year = start_date.year,
+                    month = start_date.month,
+                    day = start_date.day,
+                    hour = 0,
+                    minute = 0,
+                    second = 0,
+                tz=timezone,
         )
-        generation = client.query_generation(country_code, start=start, end=end)
+        end = pd.Timestamp(
+                year = end_date.year,
+                month = end_date.month,
+                day = end_date.day,
+                hour = 23,
+                minute = 59,
+                second = 59,
+            tz=timezone,
+        )
+        
+        retries = 0
+        data_downloaded = False
+        while retries < 3 and data_downloaded == False:
+            try:
+                load = client.query_load(country_code, start=start, end=end)
+                day_ahead_prices = pd.DataFrame(
+                    client.query_day_ahead_prices(country_code, start=start, end=end),
+                    columns=["day_ahead_prices"],
+                )
+                generation = client.query_generation(country_code, start=start, end=end)
 
+                data_downloaded = True
+            except Exception as e:
+                error = e
+                retries += 1
+                continue
+        if data_downloaded is False:
+            raise DownloadError("Could not download data from entsoe, last error: " + str(error))
         # add country code to table
         load["country_code"] = country_code
         day_ahead_prices["country_code"] = country_code
@@ -82,11 +101,6 @@ def download_electricity_data(country_codes: list[str], start_date: datetime, en
     load["timestamp"] = load.index
     day_ahead_prices["timestamp"] = day_ahead_prices.index
     generation["timestamp"] = generation.index
-
-    load["timestamp"] = pd.to_datetime(load["timestamp"], utc = True)
-    day_ahead_prices["timestamp"] = pd.to_datetime(day_ahead_prices["timestamp"], utc = True)
-    generation["timestamp"] = pd.to_datetime(generation["timestamp"], utc = True)
-
 
     generation_long = (
         generation.set_index(["timestamp", "country_code"]).stack([0, 1]).reset_index()
