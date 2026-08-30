@@ -2,12 +2,12 @@ import os
 from datetime import datetime
 
 import pandas as pd
+from requests import HTTPError
 from entsoe import EntsoePandasClient
 
 from src.schemas import COUNTRIES
 
-class DownloadError(Exception):
-    pass
+
 def download_electricity_data(countries: list[str], start_date: datetime, end_date: datetime):
     """
     Downloads data from entsoe between start_date and end_date.
@@ -78,12 +78,12 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
                 generation = client.query_generation(country_code, start=start, end=end)
 
                 data_downloaded = True
-            except Exception as e:
+            except HTTPError as e:
                 error = e
                 retries += 1
                 continue
         if data_downloaded is False:
-            raise DownloadError("Could not download data from entsoe, last error: " + str(error))
+            raise HTTPError("Could not download data from entsoe, last error: " + str(error))
         # add country code to table
         load["country_code"] = country_code
         day_ahead_prices["country_code"] = country_code

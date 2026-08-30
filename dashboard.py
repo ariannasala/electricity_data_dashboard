@@ -13,6 +13,122 @@ from src.oracle_connection import create_oracle_connection
 
 st.set_page_config(layout="wide")
 
+st.markdown(
+    """
+    <style>
+    hr {
+        margin-top: 0 !important;
+        margin-bottom: 0.1 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+@st.fragment
+def show_price_statistics(statistics):
+    ##show statistics
+    prices_statistics_container = st.container(border=True)
+    prices_statistics_container.subheader("Price statistics")
+
+    if statistics is None or len(statistics) == 0:
+        prices_statistics_container.write("No statistics available for this date and country.")
+        return
+    
+    statistics_to_show = statistics.round(2).T
+
+    average_price = statistics_to_show.loc["AVERAGE", 0]
+    maximum_price = statistics_to_show.loc["MAXIMUM", 0]
+    minimum_price = statistics_to_show.loc["MINIMUM", 0]
+
+    metric_column_1, metric_column_2, metric_column_3 = (
+        prices_statistics_container.columns(3)
+    )
+
+    metric_column_1.metric(
+        "Average [€/MWh]",
+        f"{average_price:.2f}",
+    )
+
+    metric_column_2.metric(
+    "Minimum [€/MWh]",
+        f"{minimum_price:.2f}",
+    )
+
+    metric_column_3.metric(
+        "Maximum [€/MWh]",
+        f"{maximum_price:.2f}",
+    )
+
+    prices_statistics_container.markdown("#### Price spread")
+
+    spread_column, value_column = prices_statistics_container.columns([2, 1])
+
+    price_spread = spread_column.selectbox(
+        "Select a price spread",
+        ["Maximum and Minimum", "P99-P1", "P95-P5", "P90-P10"],
+        label_visibility="collapsed",
+    )
+
+    match price_spread:
+        case "Maximum and Minimum":
+            spread = (
+                statistics_to_show.loc["MAXIMUM", 0]
+                - statistics_to_show.loc["MINIMUM", 0]
+            )
+
+        case "P99-P1":
+            spread = (
+                statistics_to_show.loc["P99", 0]
+                - statistics_to_show.loc["P01", 0]
+            )
+
+        case "P95-P5":
+            spread = (
+                statistics_to_show.loc["P95", 0]
+                - statistics_to_show.loc["P05", 0]
+            )
+
+        case "P90-P10":
+            spread = (
+                statistics_to_show.loc["P90", 0]
+                - statistics_to_show.loc["P10", 0]
+            )
+
+    value_column.metric(
+        "Spread [€/MWh]",
+        f"{spread:.2f}",
+    )
+
+    prices_statistics_container.divider()
+
+    negative_hours = statistics_to_show.loc[
+        "NUMBER_NEGATIVE_HOURS", 0
+    ]
+
+    wind_capture_price = statistics_to_show.loc[
+        "WIND_CAPTURE_PRICE", 0
+    ]
+
+    solar_capture_price = statistics_to_show.loc[
+        "SOLAR_CAPTURE_PRICE", 0
+    ]
+
+    prices_statistics_container.metric(
+        "Negative/zero-price hours",
+        f"{negative_hours:.0f}",
+    )
+
+    new_metric_columns = prices_statistics_container.columns(2)
+    new_metric_columns[0].metric(
+            "Solar capture price [€/MWh]",
+            f"{solar_capture_price:.2f}",
+        )
+    new_metric_columns[1].metric(
+        "Wind capture price [€/MWh]",
+        f"{wind_capture_price:.2f}",
+    )
+
+
 ## set environment variables
 os.environ["ORACLE_PASSWORD"] = st.secrets["ORACLE_PASSWORD"]
 os.environ["ORACLE_USER"] = st.secrets["ORACLE_USER"]
@@ -30,7 +146,12 @@ selected_country = st.selectbox("Select a country", available_countries)
 # select date
 available_dates = get_available_dates(connection, "load_raw")
 last_available_date = available_dates[0]
-selected_date = st.date_input("Select a date", last_available_date, min_value = available_dates[-1], max_value = available_dates[0])
+selected_date = st.date_input(
+    "Select a date",
+    last_available_date,
+    min_value=available_dates[-1],
+    max_value=available_dates[0],
+)
 
 ### get data + statistics from database
 
@@ -41,7 +162,14 @@ statistics = read_data_from_oracle(
     connection, "prices_statistics", selected_date, selected_country
 )
 
-if len(load) < 24 or load is None or len(day_ahead_prices) < 24 or day_ahead_prices is None or len(generation_pivot) < 24 or generation_pivot is None:
+if (
+    len(load) < 24
+    or load is None
+    or len(day_ahead_prices) < 24
+    or day_ahead_prices is None
+    or len(generation_pivot) < 24
+    or generation_pivot is None
+):
     st.error("No data available for this date. Please select another date.")
     st.stop()
 
@@ -51,28 +179,32 @@ load_figure, day_ahead_prices_figure, generation_figure = create_plots(
 
 ## show graphs
 
-col1, col2 = st.columns([0.67, 0.33])
-subcol1, subcol2 = col1.columns(2)
+load_column, price_column, price_statistics_column = st.columns(
+    [1, 1, 1]
+)
+with load_column:
+    st.write("")
+    load_container = st.container(gap = "large")
+    load_container.subheader("Load")
 
-subcol1.subheader("Load")
+    load_container.pyplot(load_figure, width="stretch")
 
-subcol1.pyplot(load_figure)
+with price_column:
+    st.write("")
+    price_container = st.container(gap = "large")
+    price_container.subheader("Day Ahead Prices")
 
-subcol2.subheader("Day Ahead Prices")
-
-subcol2.pyplot(day_ahead_prices_figure)
-
-col1.subheader("Generation")
-
-col1.pyplot(generation_figure, width="stretch")
-
-##show statistics
-col2.subheader("Price statistics")
+    price_container.pyplot(day_ahead_prices_figure, width="stretch")
 
 
-if len(statistics) == 0 or statistics is None:
-    col2.write("No statistics available for this date and country.")
-else:
-    statistics_to_show = statistics.round(2).T
+with price_statistics_column:
+    show_price_statistics(statistics)
 
-    col2.write(statistics_to_show)
+generation_column, generation_statistics_column = st.columns(
+    [2, 1]
+)
+
+with generation_column:
+    st.subheader("Generation")
+
+    st.pyplot(generation_figure, width="stretch")
