@@ -187,14 +187,22 @@ with load_column:
     load_container = st.container(gap = "large")
     load_container.subheader("Load")
 
-    load_container.pyplot(load_figure, width="stretch")
+    load_container.plotly_chart(
+    load_figure,
+    width="stretch",
+    config={"displayModeBar": False},
+)
 
 with price_column:
     st.write("")
     price_container = st.container(gap = "large")
     price_container.subheader("Day Ahead Prices")
 
-    price_container.pyplot(day_ahead_prices_figure, width="stretch")
+    price_container.plotly_chart(
+    day_ahead_prices_figure,
+    width="stretch",
+    config={"displayModeBar": False},
+)
 
 
 with price_statistics_column:
@@ -207,4 +215,8 @@ generation_column, generation_statistics_column = st.columns(
 with generation_column:
     st.subheader("Generation")
 
-    st.pyplot(generation_figure, width="stretch")
+    st.plotly_chart(
+    generation_figure,
+    width="stretch",
+    config={"displayModeBar": False},
+)
