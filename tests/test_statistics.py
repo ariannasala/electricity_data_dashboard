@@ -124,3 +124,6 @@ def test_prices_hour_real_data_for_one_day(statistics_from_real_data_single_day)
     assert statistics_from_real_data_single_day.set_index(["country_code", "timestamp"]).loc[("FR", "2026-08-26"), "minimum_price_hour"] == 825
     # for France, maximum price (110.56) at 19:45 -> maximum price hour should be 19 * 60 + 45 = 1185
     assert statistics_from_real_data_single_day.set_index(["country_code", "timestamp"]).loc[("FR", "2026-08-26"), "maximum_price_hour"] == 1185
+
+def test_number_of_zero_price_hour_is_hourly(statistics_from_real_data_single_day):
+    assert statistics_from_real_data_single_day.set_index(["country_code", "timestamp"]).loc[("ES", "2026-08-26"), "number_negative_hours"] == 3

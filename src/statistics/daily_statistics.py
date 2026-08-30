@@ -3,16 +3,32 @@ from src.schemas import COUNTRIES, COUNTRY_CODES
 
 MISSING_VALUES = -99999
 
-def calculate_price_statistics(prices, generation_data):
+def _add_day_to_the_dataframe(prices):
+    prices_dataframe_with_day = prices.copy()
+    prices_dataframe_with_day["day"] = pd.NA
 
-    prices["day"] = pd.NA
     for country_code, country_prices in prices.groupby("country_code"):
 
         datetime = pd.to_datetime(country_prices["timestamp"], utc = True)
         timezone_name = COUNTRIES[COUNTRY_CODES[country_code]].timezone
         timestamp_right_zone = datetime.dt.tz_convert(timezone_name)
         day = timestamp_right_zone.dt.date
-        prices.loc[country_prices.index, "day"] = day
+        prices_dataframe_with_day.loc[country_prices.index, "day"] = day
+
+    return prices_dataframe_with_day
+
+def calculate_price_statistics(prices, generation_data):
+
+    resampled_prices_list = []
+    prices = _add_day_to_the_dataframe(prices)
+
+    # we need to resample to hourly to get the right number of negative hours
+    for country_code, country_prices in prices.groupby("country_code"):
+        resampled_prices = country_prices.set_index(pd.to_datetime(country_prices["timestamp"]))["day_ahead_prices"].resample("h").mean().reset_index()
+        resampled_prices["country_code"] = country_code
+        resampled_prices_list.append(_add_day_to_the_dataframe(resampled_prices))
+
+    resampled_prices = pd.concat(resampled_prices_list)
 
     groupby = prices.groupby(["country_code", "day"])[["day_ahead_prices"]]
 
@@ -50,9 +66,9 @@ def calculate_price_statistics(prices, generation_data):
     p01 = groupby.quantile(0.01)["day_ahead_prices"].rename("p01")
 
     number_negative_hours = (
-        prices[prices["day_ahead_prices"] <= 0]
+        resampled_prices[resampled_prices["day_ahead_prices"] <= 0]
         .groupby(["country_code", "day"])
-        .count()["day_ahead_prices"]
+        .count()["day_ahead_prices"].astype(int)
         .rename("number_negative_hours")
     )
 
