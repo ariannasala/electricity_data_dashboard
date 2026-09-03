@@ -4,10 +4,11 @@ import streamlit as st
 
 from src.dashboard.plots import create_plots
 from src.etl.read_data_from_oracle import (
-    get_and_trasform_data,
+    get_data_for_dashboard,
     get_available_countries,
     get_available_dates,
     read_data_from_oracle,
+    transform_generation_data,
 )
 from src.oracle_connection import create_oracle_connection
 
@@ -142,7 +143,7 @@ st.title("Electricity Data Dashboard")
 
 # select country
 available_countries = get_available_countries(connection, "load_raw")
-selected_country = st.selectbox("Select a country", available_countries)
+selected_country_code = st.selectbox("Select a country", available_countries)
 # select date
 available_dates = get_available_dates(connection, "load_raw")
 last_available_date = available_dates[0]
@@ -155,11 +156,13 @@ selected_date = st.date_input(
 
 ### get data + statistics from database
 
-load, day_ahead_prices, generation_pivot = get_and_trasform_data(
-    connection, selected_date, selected_country
+load, day_ahead_prices, generation = get_data_for_dashboard(
+    connection, selected_date, selected_country_code
 )
+
+generation_pivot = transform_generation_data(generation)
 statistics = read_data_from_oracle(
-    connection, "prices_statistics", selected_date, selected_country
+    connection, "prices_statistics", selected_country_code, selected_date, 
 )
 
 if (
@@ -219,4 +222,19 @@ with generation_column:
     generation_figure,
     width="stretch",
     config={"displayModeBar": False},
-)
+    )
+
+with generation_statistics_column:
+    st.subheader("Generation Statistics")
+    generation_statistics = read_data_from_oracle(
+        connection, "generation_statistics", selected_country_code, selected_date, 
+    )
+    if generation_statistics is None or len(generation_statistics) == 0:
+        st.write("No generation statistics available for this date and country.")
+    else:
+        import matplotlib.pyplot as plt
+        #TODO calculate separately actual consumption
+        fig, ax = plt.subplots(figsize=(5, 5))
+        data_to_plot = generation_statistics[generation_statistics["SUM"] > 0].round(2)[["SUM", "CATHEGORY"]].groupby(["CATHEGORY"]).sum()/4
+        data_to_plot.plot.bar(title = "Total generation by source [MW]", ax=ax) #TODO this needs to be in MWh, we need to divide by 4 because the data is in 15 minute intervals. Do this in a prettier way
+        st.pyplot(fig)

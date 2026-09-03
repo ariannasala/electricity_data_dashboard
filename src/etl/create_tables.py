@@ -5,15 +5,13 @@ def create_table(cursor, data, table_name):
     """
     Creates a table in the database.
     """
-    database_lines = [
-        "timestamp TIMESTAMP",
-        "country_code VARCHAR2(10)",
-    ]
-    values = data.columns if isinstance(data,  pd.DataFrame) else data.to_numpy()
-    for column in values:
-        if column not in ["timestamp", "country_code", "generation_source", "generation_type"]:
+    database_lines = []
+    for column in data.columns:
+        if pd.api.types.is_datetime64_any_dtype(data[column]):
+            database_lines.append(f"{column} TIMESTAMP")
+        if pd.api.types.is_numeric_dtype(data[column]):
             database_lines.append(f"{column} NUMBER")
-        elif column in ["generation_source", "generation_type"]:
+        elif pd.api.types.is_string_dtype(data[column]):
             database_lines.append(f"{column} VARCHAR2(100)")
         
     database_lines = ", ".join(database_lines)

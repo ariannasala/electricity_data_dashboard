@@ -1,7 +1,6 @@
 import plotly.express as px
 import plotly.graph_objects as go
 
-
 GENERATION_COLORS_PALETTE = {
     "wind": px.colors.sequential.Greens,
     "solar": px.colors.sequential.YlOrBr,
@@ -14,48 +13,50 @@ GENERATION_COLORS_PALETTE = {
     "oil": px.colors.sequential.Oranges,
     "other": px.colors.sequential.amp,
 }
-def create_plots(load, day_ahead_prices, generation):
 
-    # ------------------------------------------------------------------
-    # Load
-    # ------------------------------------------------------------------
-
+def create_load_plot(load):
     load_figure = px.line(
-        load,
-        x="TIMESTAMP",
-        y="LOAD",
-        labels={
-            "TIMESTAMP": "",
-            "LOAD": "Load [MW]",
-        },
-    )
-
+            load,
+            x="TIMESTAMP",
+            y="LOAD",
+            labels={
+                "TIMESTAMP": "",
+                "LOAD": "Load [MW]",
+            },
+        )
+    
     load_figure.update_layout(
         margin=dict(l=10, r=10, t=10, b=10),
         hovermode="x unified",
         legend_title_text="",
     )
+    return load_figure
 
-    # ------------------------------------------------------------------
-    # Day-ahead prices
-    # ------------------------------------------------------------------
-
+def create_price_plot(day_ahead_prices):
     day_ahead_prices_figure = px.line(
-        day_ahead_prices,
-        x="TIMESTAMP",
-        y="DAY_AHEAD_PRICES",
-        labels={
-            "TIMESTAMP": "",
-            "DAY_AHEAD_PRICES": "Price [€/MWh]",
-        },
-    )
-
+            day_ahead_prices,
+            x="TIMESTAMP",
+            y="DAY_AHEAD_PRICES",
+            labels={
+                "TIMESTAMP": "",
+                "DAY_AHEAD_PRICES": "Price [€/MWh]",
+            },
+        )
+    
     day_ahead_prices_figure.update_layout(
         margin=dict(l=10, r=10, t=10, b=10),
         hovermode="x unified",
         legend_title_text="",
     )
+    
 
+    return day_ahead_prices_figure
+def create_plots(load, day_ahead_prices, generation):
+    from src.utils import get_generation_category
+   
+    load_figure = create_load_plot(load)
+
+    day_ahead_prices_figure = create_price_plot(day_ahead_prices)   
     # ------------------------------------------------------------------
     # Generation
     # ------------------------------------------------------------------
@@ -66,26 +67,6 @@ def create_plots(load, day_ahead_prices, generation):
         if column != "TIMESTAMP"
     ]
 
-    generation_category_order = [
-        "wind",
-        "solar",
-        "hydro",
-        "nuclear",
-        "gas",
-        "coal",
-        "biomass",
-        "oil",
-        "other",
-    ]
-
-    def get_generation_category(generation_type):
-        generation_type_lower = generation_type.lower()
-
-        for category in generation_category_order:
-            if category in generation_type_lower:
-                return category
-
-        return "other"
 
     def make_transparent_color(color, opacity=0.5):
         rgb_values = color.replace("rgb(", "").replace(")", "").split(",")

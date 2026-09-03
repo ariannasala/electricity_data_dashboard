@@ -13,3 +13,4 @@ wheels/
 *.env
 .streamlit/secrets.toml
 scripts/encrypt_wallet.py
+.vscode

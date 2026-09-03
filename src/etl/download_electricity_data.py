@@ -70,11 +70,12 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
         data_downloaded = False
         while retries < 3 and data_downloaded == False:
             try:
-                load = client.query_load(country_code, start=start, end=end)
                 day_ahead_prices = pd.DataFrame(
                     client.query_day_ahead_prices(country_code, start=start, end=end),
                     columns=["day_ahead_prices"],
                 )
+                load = client.query_load(country_code, start=start, end=end)
+
                 generation = client.query_generation(country_code, start=start, end=end)
 
                 data_downloaded = True
@@ -123,8 +124,8 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
             "Actual Load": "load",
         }
     )
-    load = load[["timestamp", "country_code", "load"]]
+    load = load[["timestamp", "country_code", "load"]].reset_index(drop=True)
 
-    day_ahead_prices = day_ahead_prices[["timestamp", "country_code", "day_ahead_prices"]]
+    day_ahead_prices = day_ahead_prices[["timestamp", "country_code", "day_ahead_prices"]].reset_index(drop=True)
 
     return load, day_ahead_prices, generation_long

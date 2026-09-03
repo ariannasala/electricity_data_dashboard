@@ -6,7 +6,7 @@ import pandas as pd
 from src.etl.download_electricity_data import download_electricity_data
 from src.etl.load_data_to_oracle import load_data_to_oracle
 from src.oracle_connection import create_oracle_connection
-from src.statistics.daily_statistics import calculate_price_statistics
+from src.statistics.daily_statistics import calculate_price_statistics, calculate_generation_statistics
 
 if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets
@@ -16,10 +16,10 @@ if not os.environ.get("ENTSOE_API_KEY"):
 countries = ["France", "Spain", "Germany"]
 # yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
 
-global_end_date = datetime(year=2026, month=8, day=29)
+global_end_date = datetime(year=2026, month=9, day=2)
 # global_start_date = datetime(year = global_end_date.year-1, month = 12, day = 1)
-global_start_date = datetime(year=2026, month=1, day=1)
-start_dates = pd.date_range(start=global_start_date, end=global_end_date, freq="D")
+global_start_date = datetime(year=2025, month=12, day=31)
+start_dates = pd.date_range(start=global_start_date, end=global_end_date, freq="ME")
 print(start_dates)
 connection = create_oracle_connection()
 cursor = connection.cursor()
@@ -56,5 +56,8 @@ for i, start_date in enumerate(start_dates):
     load_data_to_oracle(
         cursor, connection, statistics, "prices_statistics", "prices_statistics_staging"
     )
+    generation_statistics = calculate_generation_statistics(generation_long)
+
+    load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging")
 
 connection.close()

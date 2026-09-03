@@ -3,12 +3,14 @@ import pandas as pd
 
 MINIMUM_GENERATION_DERIVATIVE = 15000
 
-def read_data_from_oracle(connection, table_name, date, country):
+def read_data_from_oracle(connection, table_name, country_code, date_start, date_end=None):
+    if date_end is None:
+        date_end = date_start
     sql = f"""
     SELECT * FROM {table_name}
-    WHERE timestamp >= TIMESTAMP '{date} 00:00:00'
-    AND timestamp <= TIMESTAMP '{date} 23:59:59'
-    AND country_code = '{country}'
+    WHERE timestamp >= TIMESTAMP '{date_start} 00:00:00'
+    AND timestamp <= TIMESTAMP '{date_end} 23:59:59'
+    AND country_code = '{country_code}'
     ORDER BY timestamp ASC
     """
     df = pd.read_sql(sql, connection)
@@ -36,7 +38,7 @@ def get_available_countries(connection, table_name):
 
     return available_countries
 
-def _transform_generation_data(raw_generation):
+def transform_generation_data(raw_generation):
     actual_consumption_indices = raw_generation[
             raw_generation["GENERATION_TYPE"] == "Actual Consumption"
         ].index
@@ -73,18 +75,15 @@ def _transform_generation_data(raw_generation):
     return generation_pivot
 
 
-def get_and_trasform_data(connection, selected_date, selected_country):
+def get_data_for_dashboard(connection, selected_date, selected_country_code):
     load = read_data_from_oracle(
-        connection, "load_raw", selected_date, selected_country
+        connection, "load_raw", selected_country_code, selected_date, 
     )
     day_ahead_prices = read_data_from_oracle(
-        connection, "day_ahead_prices_raw", selected_date, selected_country
+        connection, "day_ahead_prices_raw", selected_country_code, selected_date, 
     )
     generation = read_data_from_oracle(
-        connection, "generation_raw", selected_date, selected_country
+        connection, "generation_raw", selected_country_code, selected_date, 
     )
 
-    generation_pivot = _transform_generation_data(generation)
-    
-
-    return load, day_ahead_prices, generation_pivot    
+    return load, day_ahead_prices, generation  
