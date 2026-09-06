@@ -19,7 +19,7 @@ countries = ["France", "Spain", "Germany"]
 global_end_date = datetime(year=2026, month=9, day=2)
 # global_start_date = datetime(year = global_end_date.year-1, month = 12, day = 1)
 global_start_date = datetime(year=2025, month=12, day=31)
-start_dates = pd.date_range(start=global_start_date, end=global_end_date, freq="ME")
+start_dates = pd.date_range(start=global_start_date, end=global_end_date, freq="W-SUN")
 print(start_dates)
 connection = create_oracle_connection()
 cursor = connection.cursor()
@@ -58,6 +58,6 @@ for i, start_date in enumerate(start_dates):
     )
     generation_statistics = calculate_generation_statistics(generation_long)
 
-    load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging")
+    load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging", ["timestamp", "country_code", "generation_source", "cathegory"])
 
 connection.close()
