@@ -4,7 +4,10 @@ from datetime import datetime, timedelta, timezone
 from src.etl.download_electricity_data import download_electricity_data
 from src.etl.load_data_to_oracle import load_data_to_oracle
 from src.oracle_connection import create_oracle_connection
-from src.statistics.daily_statistics import calculate_price_statistics, calculate_generation_statistics
+from src.statistics.daily_statistics import (
+    calculate_generation_statistics,
+    calculate_price_statistics,
+)
 
 if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets
@@ -42,5 +45,5 @@ price_statistics = calculate_price_statistics(day_ahead_prices, generation_long)
 load_data_to_oracle(cursor, connection, price_statistics, "prices_statistics", "prices_statistics_staging")
 generation_statistics = calculate_generation_statistics(generation_long)
 
-load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging")
+load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging", ["timestamp", "country_code", "generation_source", "cathegory"])
 connection.close()
