@@ -17,13 +17,13 @@ if not os.environ.get("ENTSOE_API_KEY"):
 load_generation = True
 load_prices = True
 
-country_codes = ["FR", "ES"]
+country_codes = ["FR", "ES", "DE_LU"]
 oracle_prices_table = "day_ahead_prices_raw"
 oracle_generation_table = "generation_raw"
 price_statistics_table = "prices_statistics"
 generation_statistics_table = "generation_statistics"
-start_date = "2026-08-01"
-end_date = "2026-08-31"
+start_date = "2026-09-06"
+end_date = "2026-09-06"
 
 connection = create_oracle_connection()
 cursor = connection.cursor()

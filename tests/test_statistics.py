@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from src.statistics.daily_statistics import calculate_price_statistics, calculate_generation_statistics
-
+import numpy as np
 
 @pytest.fixture
 def prices():
@@ -123,6 +123,12 @@ def test_single_day_data_has_statistics_for_one_day(price_statistics_from_real_d
     assert len(price_statistics_from_real_data_single_day) == 2
     assert len(price_statistics_from_real_data_single_day["country_code"].unique()) == 2
     assert len(price_statistics_from_real_data_single_day["timestamp"].unique()) == 1
+
+def test_solar_wind_capture_price(price_statistics_from_real_data_single_day):
+    # check with results from excel
+    assert np.isclose(price_statistics_from_real_data_single_day.set_index(["country_code", "timestamp"]).loc[("ES", "2026-08-26"), "solar_capture_price"], 22.9458997151438)
+    assert np.isclose(price_statistics_from_real_data_single_day.set_index(["country_code", "timestamp"]).loc[("ES", "2026-08-26"), "wind_capture_price"], 90.7290993563407)
+
 
 def test_prices_hour_real_data_for_one_day(price_statistics_from_real_data_single_day):
     """We check that the hour of the minimum price and maximum prices correctly calculated and refer correctly to the time zone"""

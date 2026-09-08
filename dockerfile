@@ -12,7 +12,7 @@ RUN uv pip install --system -r pyproject.toml
 
 # Copy in the source code
 COPY src ./src
-COPY scripts/load_yesterday_data.py ./
+COPY scripts/load_electricity_data.py ./
 COPY data ./data
 COPY dashboard.py .
 COPY .streamlit ./.streamlit

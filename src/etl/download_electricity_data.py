@@ -82,7 +82,6 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
             except HTTPError as e:
                 error = e
                 retries += 1
-                continue
         if data_downloaded is False:
             raise HTTPError("Could not download data from entsoe, last error: " + str(error))
         # add country code to table

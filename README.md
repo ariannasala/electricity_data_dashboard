@@ -17,7 +17,19 @@ This gets the data from the etso-e API and loads it to an Oracle database
     - COUNTRY_CODE: entso-e country code for which to download the data
     - WALLET_ENCRYPTING_PASSWORD: password used to encrypt the wallet
 
-- You can now run ```docker compose up uploader --build``` to upload yesterday's data to Oracle
+- You can now run:
+    - in bash: 
+    ```
+    START_DATE=$(date -d "3 days ago" '+%Y-%m-%d') \
+    END_DATE=$(date -d "yesterday" '+%Y-%m-%d') \
+    docker-compose up --build uploader
+    ```
+    - in windows:
+    ```
+    $env:START_DATE = ((Get-Date).AddDays(-3).ToString("yyyy-MM-dd"))
+    $env:END_DATE = ((Get-Date).AddDays(-1).ToString("yyyy-MM-dd"))
+    docker-compose up --build uploader
+    ```
 ## Streamlit dashboard
 
 ```docker compose up dashboard```

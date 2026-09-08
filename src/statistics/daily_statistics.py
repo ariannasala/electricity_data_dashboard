@@ -275,7 +275,7 @@ def calculate_generation_statistics(generation_long):
     # convert to lowercase to make this work with the data read from oracle as well as the data read from entsoe
     generation_long.columns = generation_long.columns.str.lower()
 
-    generation_long["timestamp"] = pd.to_datetime(generation_long["timestamp"])
+    generation_long["timestamp"] = pd.to_datetime(generation_long["timestamp"], utc = True)
     generation_long = _add_day_to_the_dataframe(generation_long)
     generation_only_positive = generation_long[generation_long["generation_type"] != "Actual Consumption"]
     generation_only_positive["cathegory"] = generation_only_positive["generation_source"].apply(get_generation_category)

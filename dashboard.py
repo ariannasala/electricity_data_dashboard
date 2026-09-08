@@ -141,27 +141,40 @@ os.environ["WALLET_ENCRIPTING_PASSWORD"] = st.secrets["WALLET_ENCRIPTING_PASSWOR
 
 connection = create_oracle_connection()
 st.title("Electricity Data Dashboard")
+st.write("Data Source: ENTSO-E Transparency Platform")
 
+col1, col2, col3 = st.columns(3)
 # select country
 available_country_codes = get_available_countries(connection, "load_raw")
 available_countries = [country for country in COUNTRIES if COUNTRIES[country].code in available_country_codes]
-selected_country = st.selectbox("Select a country", available_countries)
+selected_country = col1.selectbox("Selected country:", available_countries)
 selected_country_code = COUNTRIES[selected_country].code
 # select date
 available_dates = get_available_dates(connection, "load_raw")
 last_available_date = available_dates[0]
-selected_date = st.date_input(
-    "Select a date",
+selected_date = col2.date_input(
+    "Selected date:",
     last_available_date,
     min_value=available_dates[-1],
     max_value=available_dates[0],
 )
 
-### get data + statistics from database
-
+# get data
 load, day_ahead_prices, generation = get_data_for_dashboard(
     connection, selected_date, selected_country_code
 )
+
+### download data
+col3.space(11)
+with col3.expander("Download data"):
+    download_col1, download_col2, download_col3 = st.columns(3)
+    download_col1.download_button("Load data", load.to_csv(index=False).encode('utf-8'), f"load_data_{selected_date}_{selected_country_code}.csv", "text/csv")
+        
+    download_col2.download_button("Day ahead prices data", day_ahead_prices.to_csv(index=False).encode('utf-8'), f"day_ahead_prices_data_{selected_date}_{selected_country_code}.csv", "text/csv")
+        
+    download_col3.download_button("Generation data", generation.to_csv(index=False).encode('utf-8'), f"generation_data_{selected_date}_{selected_country_code}.csv", "text/csv")
+
+### plots + statistics from database
 
 generation_pivot = transform_generation_data(generation)
 statistics = read_data_from_oracle(
@@ -191,7 +204,7 @@ load_column, price_column, price_statistics_column = st.columns(
 with load_column:
     st.write("")
     load_container = st.container(gap = "large")
-    load_container.subheader("Load")
+    load_container.subheader("Electricity demand")
 
     load_container.plotly_chart(
     load_figure,
@@ -202,7 +215,7 @@ with load_column:
 with price_column:
     st.write("")
     price_container = st.container(gap = "large")
-    price_container.subheader("Day Ahead Prices")
+    price_container.subheader("Day-ahead electricity prices")
 
     price_container.plotly_chart(
     day_ahead_prices_figure,
@@ -217,9 +230,22 @@ with price_statistics_column:
 generation_column, generation_statistics_column = st.columns(
     [2, 1]
 )
+if "detailed_generation" not in st.session_state:
+    st.session_state.detailed_generation = "Yes"
+def update_generation_plot():
+    global generation_figure
+    generation_figure = create_generation_plot(generation_pivot, detailed=st.session_state.detailed_generation == "Yes")
 
 with generation_column:
     st.subheader("Generation")
+    #detailed = st.radio(
+    #    "Detailed view",
+    #    ["Yes", "No"],
+    #    horizontal=True,
+    #)
+    #if detailed != st.session_state.detailed_generation:
+    #    st.session_state.detailed_generation = detailed
+    #    update_generation_plot()
 
     st.plotly_chart(
     generation_figure,
@@ -228,15 +254,16 @@ with generation_column:
     )
 
 with generation_statistics_column:
-    st.subheader("Total Energy Produced by Source")
+    generation_statistics_container = st.container(border = True)
+    generation_statistics_container.subheader("Daily Electricity Generation by Source")
     generation_statistics = read_data_from_oracle(
         connection, "generation_statistics", selected_country_code, selected_date, 
     )
     if generation_statistics is None or len(generation_statistics) == 0:
-        st.write("No generation statistics available for this date and country.")
+        generation_statistics_container.write("No generation statistics available for this date and country.")
     else:
         import matplotlib.pyplot as plt
         #TODO calculate separately actual consumption
         fig, ax = plt.subplots(figsize=(5, 5))
         fig = create_treemap(generation_statistics, generation_pivot)
-        st.plotly_chart(fig)
+        generation_statistics_container.plotly_chart(fig)

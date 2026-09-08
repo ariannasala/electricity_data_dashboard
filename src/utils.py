@@ -5,6 +5,9 @@ def get_generation_category(generation_type):
 
     generation_type_lower = generation_type.lower()
 
+    if generation_type_lower == "timestamp":
+        return "timestamp"
+
     for category in GENERATION_CATHEGORY_ORDER:
         if category in generation_type_lower:
             return category

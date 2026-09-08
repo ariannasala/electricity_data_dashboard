@@ -13,7 +13,7 @@ if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets
     os.environ["ENTSOE_API_KEY"] = secrets["ENTSOE_API_KEY"]
 
-countries = ["France", "Spain"]
+countries = ["France", "Spain", "Germany"]
 
 end_date = datetime.now(timezone.utc).date()-timedelta(days=1)
 start_date = end_date

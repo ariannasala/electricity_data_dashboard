@@ -1,7 +1,7 @@
 services:
   uploader:
     build: .
-    entrypoint: ["python", "load_yesterday_data.py"]
+    entrypoint: ["python", "load_electricity_data.py"]
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
       ORACLE_USER: ${ORACLE_USER}
@@ -10,6 +10,8 @@ services:
       ORACLE_DSN: ${ORACLE_DSN}
       ENTSOE_API_KEY: ${ENTSOE_API_KEY}
       WALLET_ENCRIPTING_PASSWORD: ${WALLET_ENCRIPTING_PASSWORD}
+      START_DATE: ${START_DATE}
+      END_DATE: ${END_DATE}
   
   dashboard:
     build: .

@@ -39,6 +39,8 @@ def get_available_countries(connection, table_name):
     return available_countries
 
 def transform_generation_data(raw_generation):
+    from src.utils import get_generation_category
+
     actual_consumption_indices = raw_generation[
             raw_generation["GENERATION_TYPE"] == "Actual Consumption"
         ].index
@@ -54,10 +56,16 @@ def transform_generation_data(raw_generation):
     generation["SOURCE"] = generation["SOURCE"].str.replace(
         "Actual Aggregated ", "", regex=False
     )
+    
+    #generation["CATHEGORY"] = generation["SOURCE"].apply(get_generation_category)
+
+    #generation_pivot = generation.pivot(
+    #    index="TIMESTAMP", columns=["SOURCE", "CATHEGORY"], values="GENERATION"
+    #).reset_index()
 
     generation_pivot = generation.pivot(
-        index="TIMESTAMP", columns="SOURCE", values="GENERATION"
-    ).reset_index()
+            index="TIMESTAMP", columns=["SOURCE"], values="GENERATION"
+        ).reset_index()
 
     # we check the derivative to fill very short glitches in the data
     derivative = generation_pivot.drop(columns = ["TIMESTAMP"]).sum(axis=1).diff()

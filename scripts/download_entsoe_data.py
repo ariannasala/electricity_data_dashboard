@@ -13,6 +13,6 @@ countries = ["Spain", "France"]
 
 load, day_ahead_prices, generation_long = download_electricity_data(countries, start_date = start_date, end_date = start_date)
 
-day_ahead_prices.to_csv("tests/data/day_ahead_prices_example.csv")
-generation_long.to_csv("tests/data/generation_long_example.csv")
-load.to_csv("tests/data/load_example.csv")
+#day_ahead_prices.to_csv("tests/data/day_ahead_prices_example.csv")
+#generation_long.to_csv("tests/data/generation_long_example.csv")
+#load.to_csv("tests/data/load_example.csv")

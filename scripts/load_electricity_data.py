@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 import pandas as pd
 
@@ -16,48 +15,58 @@ if not os.environ.get("ENTSOE_API_KEY"):
 countries = ["France", "Spain", "Germany"]
 # yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
 
-global_end_date = datetime(year=2026, month=9, day=2)
-# global_start_date = datetime(year = global_end_date.year-1, month = 12, day = 1)
-global_start_date = datetime(year=2025, month=12, day=31)
-start_dates = pd.date_range(start=global_start_date, end=global_end_date, freq="W-SUN")
-print(start_dates)
-connection = create_oracle_connection()
-cursor = connection.cursor()
 
-for i, start_date in enumerate(start_dates):
-    if i != len(start_dates) - 1:
-        end_date = start_dates[i + 1]
-    else:
-        end_date = global_end_date
-    print(start_date)
-    load, day_ahead_prices, generation_long = download_electricity_data(
-        countries, start_date=start_date, end_date=end_date
-    )
-    print("data downloaded")
 
-    load_data_to_oracle(cursor, connection, load, "load_raw", "load_staging")
+def load_electricity_data(global_start_date, global_end_date, countries):
+    start_dates = pd.date_range(start=global_start_date, end=global_end_date, freq="D")
+    connection = create_oracle_connection()
+    cursor = connection.cursor()
 
-    load_data_to_oracle(
-        cursor,
-        connection,
-        day_ahead_prices,
-        "day_ahead_prices_raw",
-        "day_ahead_prices_staging",
-    )
-    load_data_to_oracle(
-        cursor,
-        connection,
-        generation_long,
-        "generation_raw",
-        "generation_staging",
-        ["timestamp", "country_code", "generation_source", "generation_type"],
-    )
-    statistics = calculate_price_statistics(day_ahead_prices, generation_long)
-    load_data_to_oracle(
-        cursor, connection, statistics, "prices_statistics", "prices_statistics_staging"
-    )
-    generation_statistics = calculate_generation_statistics(generation_long)
+    for i, start_date in enumerate(start_dates):
+        if i != len(start_dates) - 1:
+            end_date = start_dates[i + 1]
+        else:
+            end_date = global_end_date
+        print(start_date)
+        load, day_ahead_prices, generation_long = download_electricity_data(
+            countries, start_date=start_date, end_date=end_date
+        )
+        print("data downloaded")
 
-    load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging", ["timestamp", "country_code", "generation_source", "cathegory"])
+        load_data_to_oracle(cursor, connection, load, "load_raw", "load_staging")
 
-connection.close()
+        load_data_to_oracle(
+            cursor,
+            connection,
+            day_ahead_prices,
+            "day_ahead_prices_raw",
+            "day_ahead_prices_staging",
+        )
+        load_data_to_oracle(
+            cursor,
+            connection,
+            generation_long,
+            "generation_raw",
+            "generation_staging",
+            ["timestamp", "country_code", "generation_source", "generation_type"],
+        )
+        statistics = calculate_price_statistics(day_ahead_prices, generation_long)
+        load_data_to_oracle(
+            cursor, connection, statistics, "prices_statistics", "prices_statistics_staging"
+        )
+        generation_statistics = calculate_generation_statistics(generation_long)
+
+        load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging", ["timestamp", "country_code", "generation_source", "cathegory"])
+
+    connection.close()
+
+if __name__ == "__main__":
+    from datetime import datetime, timedelta
+    start_date = os.environ.get("START_DATE")
+    if not start_date:
+        start_date = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
+
+    end_date = os.environ.get("END_DATE")
+    if not end_date:
+        end_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    load_electricity_data(start_date, end_date, countries)
