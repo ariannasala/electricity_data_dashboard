@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-MINIMUM_GENERATION_DERIVATIVE = 15000
-
 def read_data_from_oracle(connection, table_name, country_code, date_start, date_end=None):
     if date_end is None:
         date_end = date_start
@@ -67,29 +65,28 @@ def transform_generation_data(raw_generation):
             index="TIMESTAMP", columns=["SOURCE"], values="GENERATION"
         ).reset_index()
 
-    # we check the derivative to fill very short glitches in the data
-    derivative = generation_pivot.drop(columns = ["TIMESTAMP"]).sum(axis=1).diff()
-    is_glitch = (derivative < - MINIMUM_GENERATION_DERIVATIVE) & (
-        derivative.shift(-1) > MINIMUM_GENERATION_DERIVATIVE)
-
-    generation_pivot.loc[is_glitch, generation_pivot.columns] = np.nan
-    generation_pivot = generation_pivot.interpolate()
-
+    # we check the derivative to fill very short glitches in the dat
     columns_zero_sum = generation_pivot.drop(columns=["TIMESTAMP"]).columns[
             generation_pivot.drop(columns=["TIMESTAMP"]).sum(axis=0) == 0
     ]
     generation_pivot = generation_pivot.drop(columns=columns_zero_sum)
+    generation_pivot = _resample_dataframe(generation_pivot)
 
     return generation_pivot
 
+def _resample_dataframe(df):
+    frequency = pd.to_timedelta(df["TIMESTAMP"].diff().mode()).iloc[0]
+    df = df.set_index("TIMESTAMP").resample(frequency).asfreq().reset_index()
 
+    return df
 def get_data_for_dashboard(connection, selected_date, selected_country_code):
-    load = read_data_from_oracle(
+    load = _resample_dataframe(read_data_from_oracle(
         connection, "load_raw", selected_country_code, selected_date, 
-    )
-    day_ahead_prices = read_data_from_oracle(
+    ))
+    
+    day_ahead_prices = _resample_dataframe(read_data_from_oracle(
         connection, "day_ahead_prices_raw", selected_country_code, selected_date, 
-    )
+    ))
     generation = read_data_from_oracle(
         connection, "generation_raw", selected_country_code, selected_date, 
     )

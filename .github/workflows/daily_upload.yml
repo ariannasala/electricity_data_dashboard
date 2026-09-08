@@ -27,6 +27,4 @@ jobs:
           ORACLE_WALLET_PASSWORD: ${{ secrets.ORACLE_WALLET_PASSWORD }}
           COUNTRY_CODE: "ES"
         run: |
-          START_DATE=$(date -d "3 days ago" '+%Y-%m-%d') \
-          END_DATE=$(date -d "yesterday" '+%Y-%m-%d') \
           docker compose up --abort-on-container-exit --exit-code-from uploader uploader

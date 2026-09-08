@@ -163,6 +163,17 @@ selected_date = col2.date_input(
 load, day_ahead_prices, generation = get_data_for_dashboard(
     connection, selected_date, selected_country_code
 )
+missing_data_load = load[load.isna().any(axis = 1)]
+missing_data_prices = day_ahead_prices[day_ahead_prices.isna().any(axis = 1)]
+generation_pivot = transform_generation_data(generation)
+missing_data_generation = generation_pivot[generation_pivot.isna().any(axis = 1)]
+
+if len(missing_data_load) > 0:
+    st.warning(f"{len(missing_data_load)} load data points are missing.")
+if len(missing_data_prices) > 0:
+    st.warning(f"{len(missing_data_prices)} day-ahead prices data points are missing.")
+if len(missing_data_generation) > 0:
+    st.warning(f"{len(missing_data_generation)} generation data points are missing.")
 
 ### download data
 col3.space(11)
@@ -176,7 +187,7 @@ with col3.expander("Download data"):
 
 ### plots + statistics from database
 
-generation_pivot = transform_generation_data(generation)
+
 statistics = read_data_from_oracle(
     connection, "prices_statistics", selected_country_code, selected_date, 
 )
@@ -205,12 +216,13 @@ with load_column:
     st.write("")
     load_container = st.container(gap = "large")
     load_container.subheader("Electricity demand")
-
     load_container.plotly_chart(
     load_figure,
     width="stretch",
-    config={"displayModeBar": False},
-)
+    config={"displayModeBar": False}
+    )
+  
+
 
 with price_column:
     st.write("")
@@ -246,7 +258,6 @@ with generation_column:
     #if detailed != st.session_state.detailed_generation:
     #    st.session_state.detailed_generation = detailed
     #    update_generation_plot()
-
     st.plotly_chart(
     generation_figure,
     width="stretch",

@@ -115,6 +115,7 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
         }
     )
     generation_long = generation_long[["timestamp", "country_code", "generation_source", "generation_type", "generation"]]
+    # we may have cathegories only for some countries, so we fill nans with zeros
     generation_long = generation_long.fillna(0)
     load = load.rename(
         columns={

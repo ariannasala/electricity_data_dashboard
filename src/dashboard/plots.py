@@ -207,6 +207,8 @@ def create_price_plot(day_ahead_prices):
 
 def create_treemap(generation_statistics, generation):
     slot_duration = pd.to_timedelta(pd.infer_freq(generation["TIMESTAMP"]))
+    if pd.isnull(slot_duration):
+        slot_duration = pd.to_timedelta(generation["TIMESTAMP"].diff().mode()).iloc[0]
     slots_per_hour = int(pd.Timedelta("1h") / slot_duration)
     data_to_plot = (
         generation_statistics[generation_statistics["SUM"] > 0]
