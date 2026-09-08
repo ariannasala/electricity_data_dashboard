@@ -62,11 +62,11 @@ def load_electricity_data(global_start_date, global_end_date, countries):
 
 if __name__ == "__main__":
     from datetime import datetime, timedelta
-    start_date = os.environ.get("START_DATE")
+    start_date = pd.to_datetime(os.environ.get("START_DATE"))
     if not start_date:
-        start_date = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
+        start_date = (datetime.now() - timedelta(days=3))
 
-    end_date = os.environ.get("END_DATE")
+    end_date = pd.to_datetime(os.environ.get("END_DATE"))
     if not end_date:
-        end_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        end_date = (datetime.now() - timedelta(days=1))
     load_electricity_data(start_date, end_date, countries)
