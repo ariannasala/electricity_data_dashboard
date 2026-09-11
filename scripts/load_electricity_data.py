@@ -6,13 +6,14 @@ from src.etl.download_electricity_data import download_electricity_data
 from src.etl.load_data_to_oracle import load_data_to_oracle
 from src.oracle_connection import create_oracle_connection
 from src.statistics.daily_statistics import calculate_price_statistics, calculate_generation_statistics
+from src.schemas import COUNTRIES
 
 if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets
 
     os.environ["ENTSOE_API_KEY"] = secrets["ENTSOE_API_KEY"]
 
-countries = ["France", "Spain", "Germany"]
+countries =list(COUNTRIES.keys())
 # yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
 
 

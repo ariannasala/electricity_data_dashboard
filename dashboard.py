@@ -143,7 +143,7 @@ connection = create_oracle_connection()
 st.title("Electricity Data Dashboard")
 st.write("Data Source: ENTSO-E Transparency Platform")
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 # select country
 available_country_codes = get_available_countries(connection, "load_raw")
 available_countries = [country for country in COUNTRIES if COUNTRIES[country].code in available_country_codes]
@@ -174,16 +174,6 @@ if len(missing_data_prices) > 0:
     st.warning(f"{len(missing_data_prices)} day-ahead prices data points are missing.")
 if len(missing_data_generation) > 0:
     st.warning(f"{len(missing_data_generation)} generation data points are missing.")
-
-### download data
-col3.space(11)
-with col3.expander("Download data"):
-    download_col1, download_col2, download_col3 = st.columns(3)
-    download_col1.download_button("Load data", load.to_csv(index=False).encode('utf-8'), f"load_data_{selected_date}_{selected_country_code}.csv", "text/csv")
-        
-    download_col2.download_button("Day ahead prices data", day_ahead_prices.to_csv(index=False).encode('utf-8'), f"day_ahead_prices_data_{selected_date}_{selected_country_code}.csv", "text/csv")
-        
-    download_col3.download_button("Generation data", generation.to_csv(index=False).encode('utf-8'), f"generation_data_{selected_date}_{selected_country_code}.csv", "text/csv")
 
 ### plots + statistics from database
 

@@ -1,37 +1,72 @@
 # Electricity Data Dashboard
-This is a simple project to experiment with using oracle, github action and streamlit to built electricity data dashboards.
 
-Electricity data for the previous day is automatically loaded to Oracle at 4 AM. The data comes from the entso-e API.
+An end-to-end electricity data pipeline and interactive dashboard built with **Python, Oracle, Docker, GitHub Actions and Streamlit**.
 
-This is work in progress.
+This project was developed as a practical exercise in combining **electricity markets, data engineering and software development**.
 
-## Data upload on Oracle
-This gets the data from the etso-e API and loads it to an Oracle database
-- Put an ecrypted wallet in data, called `wallet.zip.enc`. It needs to be encrypted with python's cryttography library
-- Set environment variables in .env file. The needed environment variables are:
-    - ORACLE_PASSWORD: needed to access Oracle
-    - ORACLE_USER
-    - ORACLE_WALLET_PASSWORD
-    - ORACLE_DSN
-    - ENTSOE_API_KEY
-    - COUNTRY_CODE: entso-e country code for which to download the data
-    - WALLET_ENCRYPTING_PASSWORD: password used to encrypt the wallet
+The project retrieves electricity-market data from the **ENTSO-E Transparency Platform**, processes and stores it in an Oracle database, and makes it available through an interactive dashboard for exploring electricity prices, demand and generation.
 
-- You can now run:
-    - in bash: 
-    ```
-    START_DATE=$(date -d "3 days ago" '+%Y-%m-%d') \
-    END_DATE=$(date -d "yesterday" '+%Y-%m-%d') \
-    docker-compose up --build uploader
-    ```
-    - in windows:
-    ```
-    $env:START_DATE = ((Get-Date).AddDays(-3).ToString("yyyy-MM-dd"))
-    $env:END_DATE = ((Get-Date).AddDays(-1).ToString("yyyy-MM-dd"))
-    docker-compose up --build uploader
-    ```
-## Streamlit dashboard
+> 🚧 **Work in progress** — the project is continuously being extended with additional energy-market indicators and analysis.
 
-```docker compose up dashboard```
+## Data source
 
-And go to `http://localhost:8051` in the browser.
+The electricity data used in this project comes from the **ENTSO-E Transparency Platform**.
+
+The project is intended for educational and analytical purposes and is not intended for real-time electricity-market trading or operational decision-making.
+
+## Dashboard
+
+![alt text](data/dashboard_1.png)
+![alt text](data/dashboard_2.png)
+
+The dashboard provides an interactive view of electricity-market data, including:
+
+* Day-ahead electricity prices
+* Electricity demand
+* Generation by technology
+* Renewable generation
+* Battery/storage activity
+* Daily price statistics
+* Generation and price trends over time
+
+The aim is to go beyond displaying raw data and provide indicators that can help analyse the relationship between **electricity prices, demand and the generation mix**.
+
+## Data pipeline
+
+Electricity data is retrieved from the **ENTSO-E Transparency Platform** and loaded to an Oracle database.
+
+The pipeline handles data such as:
+
+* Day-ahead electricity prices
+* Electricity load
+* Generation by production type
+
+Relevant prices and generation daily statistics are also loaded to Oracle so that they can later be quickly retrieved.
+
+The ETL pipeline is automated with **GitHub Actions**, which periodically retrieves new data and loads it into the database.
+
+## Automated workflow
+
+The production ETL is scheduled through **GitHub Actions**.
+
+The workflow:
+
+1. Retrieves the relevant electricity data from ENTSO-E.
+2. Processes and validates data from the previous day and up to three days ago - data from ENTSO-E API presents sometimes missing or faulty data and is modified in the subsequent days.
+3. Loads the data into Oracle.
+4. Makes the updated data available to the Streamlit dashboard.
+
+This allows the dashboard to be updated automatically without manually running the ETL process.
+
+## Future improvements
+
+The project is still evolving. Planned improvements include:
+
+* Expanding the dashboard to additional countries
+* Handle countries with more than a bidding zone
+* Adding historical price statistics and comparisons
+* Adding renewable capture-price analysis
+* Expanding electricity-market indicators
+* Adding further data-quality checks
+* Improving ETL monitoring and error handling
+* Adding additional analysis of the relationship between generation mix, electricity demand and electricity prices
