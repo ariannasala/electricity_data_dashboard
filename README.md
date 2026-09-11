@@ -2,7 +2,7 @@
 
 An end-to-end electricity data pipeline and interactive dashboard built with **Python, Oracle, Docker, GitHub Actions and Streamlit**.
 
-This project was developed as a practical exercise in combining **electricity markets, data engineering and software development**.
+This project was developed as a practical exercise in combining **electricity markets analysis and data engineering**.
 
 The project retrieves electricity-market data from the **ENTSO-E Transparency Platform**, processes and stores it in an Oracle database, and makes it available through an interactive dashboard for exploring electricity prices, demand and generation.
 
@@ -21,13 +21,14 @@ The project is intended for educational and analytical purposes and is not inten
 
 The dashboard provides an interactive view of electricity-market data, including:
 
-* Day-ahead electricity prices
 * Electricity demand
+* Day-ahead electricity prices
 * Generation by technology
-* Renewable generation
-* Battery/storage activity
-* Daily price statistics
-* Generation and price trends over time
+* Daily price statistics:
+    * average, minimum, maximum prices
+    * price spreads
+    * hours at negative/zero prices
+    * renewable capture prices
 
 The aim is to go beyond displaying raw data and provide indicators that can help analyse the relationship between **electricity prices, demand and the generation mix**.
 
@@ -45,7 +46,7 @@ Relevant prices and generation daily statistics are also loaded to Oracle so tha
 
 The ETL pipeline is automated with **GitHub Actions**, which periodically retrieves new data and loads it into the database.
 
-## Automated workflow
+### Automated workflow
 
 The production ETL is scheduled through **GitHub Actions**.
 
@@ -64,9 +65,11 @@ The project is still evolving. Planned improvements include:
 
 * Expanding the dashboard to additional countries
 * Handle countries with more than a bidding zone
-* Adding historical price statistics and comparisons
-* Adding renewable capture-price analysis
 * Expanding electricity-market indicators
+* Adding data on emissions
+* Adding data on exports and imports
+* Adding generation and price trends over time
+* Adding comparisons between countries
 * Adding further data-quality checks
 * Improving ETL monitoring and error handling
 * Adding additional analysis of the relationship between generation mix, electricity demand and electricity prices

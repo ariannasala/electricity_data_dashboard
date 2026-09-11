@@ -69,4 +69,4 @@ docker compose up --build uploader
 ```
 
 ## Adding new countries
-To get data for a specific bidding zone, add a new CountryData object to [schemas file](src/schemas.py), indicating the specific entso-e code found at https://github.com/EnergieID/entsoe-py/blob/master/entsoe/mappings.py.
+To get data for a specific bidding zone, add a new CountryData object to [schemas file](../schemas.py), indicating the specific entso-e code found at https://github.com/EnergieID/entsoe-py/blob/master/entsoe/mappings.py.
