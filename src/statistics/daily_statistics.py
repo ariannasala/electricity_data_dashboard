@@ -58,9 +58,7 @@ def _add_day_to_the_dataframe(dataframe):
         dataframe_with_day.loc[country_data.index, "day"] = day
 
     if local_timestamps:
-        dataframe_with_day["timestamp_local"] = pd.concat(
-            local_timestamps
-        ).sort_index()
+        dataframe_with_day["timestamp_local"] = pd.concat(local_timestamps).sort_index()
     else:
         dataframe_with_day["timestamp_local"] = pd.to_datetime(
             dataframe_with_day["timestamp"]
@@ -122,9 +120,7 @@ def calculate_price_statistics(prices, generation_data):
         )
 
         resampled_prices = (
-            country_prices.set_index(local_timestamp_index)[
-                "day_ahead_prices"
-            ]
+            country_prices.set_index(local_timestamp_index)["day_ahead_prices"]
             .resample("h")
             .mean()
             .reset_index()
@@ -149,8 +145,12 @@ def calculate_price_statistics(prices, generation_data):
 
         maximum_price_time = pd.to_datetime(maximum_price_time)
         minimum_price_time = pd.to_datetime(minimum_price_time)
-        maximum_price_hour = (maximum_price_time.dt.hour * 60) + maximum_price_time.dt.minute
-        minimum_price_hour = (minimum_price_time.dt.hour * 60) + minimum_price_time.dt.minute
+        maximum_price_hour = (
+            maximum_price_time.dt.hour * 60
+        ) + maximum_price_time.dt.minute
+        minimum_price_hour = (
+            minimum_price_time.dt.hour * 60
+        ) + minimum_price_time.dt.minute
         country_code_series = [country_code] * len(maximum_price_hour)
 
         maximum_price_hour.index = pd.MultiIndex.from_arrays(
@@ -275,15 +275,20 @@ def calculate_generation_statistics(generation_long):
     # convert to lowercase to make this work with the data read from oracle as well as the data read from entsoe
     generation_long.columns = generation_long.columns.str.lower()
 
-    generation_long["timestamp"] = pd.to_datetime(generation_long["timestamp"], utc = True)
+    generation_long["timestamp"] = pd.to_datetime(
+        generation_long["timestamp"], utc=True
+    )
     generation_long = _add_day_to_the_dataframe(generation_long)
-    generation_only_positive = generation_long[generation_long["generation_type"] != "Actual Consumption"]
-    generation_only_positive["cathegory"] = generation_only_positive["generation_source"].apply(get_generation_category)
-
-
-    groupby = generation_only_positive.groupby(["day", "country_code", "generation_source", "cathegory"])[
-        ["generation"]
+    generation_only_positive = generation_long[
+        generation_long["generation_type"] != "Actual Consumption"
     ]
+    generation_only_positive["cathegory"] = generation_only_positive[
+        "generation_source"
+    ].apply(get_generation_category)
+
+    groupby = generation_only_positive.groupby(
+        ["day", "country_code", "generation_source", "cathegory"]
+    )[["generation"]]
     basic_statistics = _calculate_basic_statistics(groupby, "generation")
 
     total_generation = groupby.sum()["generation"].rename("sum")

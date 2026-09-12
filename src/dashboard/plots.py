@@ -61,22 +61,22 @@ def _get_selected_colors(generation_columns):
     return generation_color_map
 
 
-def create_generation_plot(generation, detailed = True):
+def create_generation_plot(generation, detailed=True):
     # ------------------------------------------------------------------
     # Generation
     # ------------------------------------------------------------------
-    #if not detailed:
+    # if not detailed:
     #    generation_to_plot = generation.T.groupby(level="CATHEGORY").sum().T
     #    generation_to_plot.rename(columns={generation_to_plot.columns[0]: 'TIMESTAMP'}, inplace=True)
 
-    #else:
+    # else:
     #    generation_to_plot = generation.copy()
     #    generation_to_plot.columns  = generation.columns.droplevel(1)
 
     generation_to_plot = generation.copy()
     generation_columns = [
-            column for column in generation_to_plot.columns if column != "TIMESTAMP"
-        ]
+        column for column in generation_to_plot.columns if column != "TIMESTAMP"
+    ]
 
     def make_transparent_color(color, opacity=0.5):
         rgb_values = color.replace("rgb(", "").replace(")", "").split(",")

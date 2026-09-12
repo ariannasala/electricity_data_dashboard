@@ -9,7 +9,9 @@ def load_data_to_oracle(
     """
     Load data to oracle. The data is loaded to a staging table and then merged into the target table.
     """
-    primary_keys = ["timestamp", "country_code"] if primary_keys is None else primary_keys
+    primary_keys = (
+        ["timestamp", "country_code"] if primary_keys is None else primary_keys
+    )
     rows = list(data.itertuples(index=False, name=None))
 
     number_of_columns = len(data.columns)
@@ -51,4 +53,3 @@ def load_data_to_oracle(
 
     cursor.execute(merge_sql)
     connection.commit()
-

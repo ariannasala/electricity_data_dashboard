@@ -2,11 +2,16 @@ import os
 
 import streamlit as st
 
-from src.dashboard.plots import create_load_plot, create_generation_plot, create_price_plot, create_treemap
+from src.dashboard.plots import (
+    create_generation_plot,
+    create_load_plot,
+    create_price_plot,
+    create_treemap,
+)
 from src.etl.read_data_from_oracle import (
-    get_data_for_dashboard,
     get_available_countries,
     get_available_dates,
+    get_data_for_dashboard,
     read_data_from_oracle,
     transform_generation_data,
 )
@@ -26,6 +31,8 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
 @st.fragment
 def show_price_statistics(statistics):
     ##show statistics
@@ -33,9 +40,11 @@ def show_price_statistics(statistics):
     prices_statistics_container.subheader("Price statistics")
 
     if statistics is None or len(statistics) == 0:
-        prices_statistics_container.write("No statistics available for this date and country.")
+        prices_statistics_container.write(
+            "No statistics available for this date and country."
+        )
         return
-    
+
     statistics_to_show = statistics.round(2).T
 
     average_price = statistics_to_show.loc["AVERAGE", 0]
@@ -52,7 +61,7 @@ def show_price_statistics(statistics):
     )
 
     metric_column_2.metric(
-    "Minimum [€/MWh]",
+        "Minimum [€/MWh]",
         f"{minimum_price:.1f}",
     )
 
@@ -79,22 +88,13 @@ def show_price_statistics(statistics):
             )
 
         case "P99-P1":
-            spread = (
-                statistics_to_show.loc["P99", 0]
-                - statistics_to_show.loc["P01", 0]
-            )
+            spread = statistics_to_show.loc["P99", 0] - statistics_to_show.loc["P01", 0]
 
         case "P95-P5":
-            spread = (
-                statistics_to_show.loc["P95", 0]
-                - statistics_to_show.loc["P05", 0]
-            )
+            spread = statistics_to_show.loc["P95", 0] - statistics_to_show.loc["P05", 0]
 
         case "P90-P10":
-            spread = (
-                statistics_to_show.loc["P90", 0]
-                - statistics_to_show.loc["P10", 0]
-            )
+            spread = statistics_to_show.loc["P90", 0] - statistics_to_show.loc["P10", 0]
 
     value_column.metric(
         "Spread [€/MWh]",
@@ -103,17 +103,11 @@ def show_price_statistics(statistics):
 
     prices_statistics_container.divider()
 
-    negative_hours = statistics_to_show.loc[
-        "NUMBER_NEGATIVE_HOURS", 0
-    ]
+    negative_hours = statistics_to_show.loc["NUMBER_NEGATIVE_HOURS", 0]
 
-    wind_capture_price = statistics_to_show.loc[
-        "WIND_CAPTURE_PRICE", 0
-    ]
+    wind_capture_price = statistics_to_show.loc["WIND_CAPTURE_PRICE", 0]
 
-    solar_capture_price = statistics_to_show.loc[
-        "SOLAR_CAPTURE_PRICE", 0
-    ]
+    solar_capture_price = statistics_to_show.loc["SOLAR_CAPTURE_PRICE", 0]
 
     prices_statistics_container.metric(
         "Negative/zero-price hours",
@@ -122,9 +116,9 @@ def show_price_statistics(statistics):
 
     new_metric_columns = prices_statistics_container.columns(2)
     new_metric_columns[0].metric(
-            "Solar capture price [€/MWh]",
-            f"{solar_capture_price:.1f}",
-        )
+        "Solar capture price [€/MWh]",
+        f"{solar_capture_price:.1f}",
+    )
     new_metric_columns[1].metric(
         "Wind capture price [€/MWh]",
         f"{wind_capture_price:.1f}",
@@ -146,7 +140,11 @@ st.write("Data Source: ENTSO-E Transparency Platform")
 col1, col2 = st.columns(2)
 # select country
 available_country_codes = get_available_countries(connection, "load_raw")
-available_countries = [country for country in COUNTRIES if COUNTRIES[country].code in available_country_codes]
+available_countries = [
+    country
+    for country in COUNTRIES
+    if COUNTRIES[country].code in available_country_codes
+]
 selected_country = col1.selectbox("Selected country:", available_countries)
 selected_country_code = COUNTRIES[selected_country].code
 # select date
@@ -163,10 +161,10 @@ selected_date = col2.date_input(
 load, day_ahead_prices, generation = get_data_for_dashboard(
     connection, selected_date, selected_country_code
 )
-missing_data_load = load[load.isna().any(axis = 1)]
-missing_data_prices = day_ahead_prices[day_ahead_prices.isna().any(axis = 1)]
+missing_data_load = load[load.isna().any(axis=1)]
+missing_data_prices = day_ahead_prices[day_ahead_prices.isna().any(axis=1)]
 generation_pivot = transform_generation_data(generation)
-missing_data_generation = generation_pivot[generation_pivot.isna().any(axis = 1)]
+missing_data_generation = generation_pivot[generation_pivot.isna().any(axis=1)]
 
 if len(missing_data_load) > 0:
     st.warning(f"{len(missing_data_load)} load data points are missing.")
@@ -179,7 +177,10 @@ if len(missing_data_generation) > 0:
 
 
 statistics = read_data_from_oracle(
-    connection, "prices_statistics", selected_country_code, selected_date, 
+    connection,
+    "prices_statistics",
+    selected_country_code,
+    selected_date,
 )
 
 if (
@@ -199,72 +200,76 @@ generation_figure = create_generation_plot(generation_pivot)
 
 ## show graphs
 
-load_column, price_column, price_statistics_column = st.columns(
-    [1, 1, 1]
-)
+load_column, price_column, price_statistics_column = st.columns([1, 1, 1])
 with load_column:
     st.write("")
-    load_container = st.container(gap = "large")
+    load_container = st.container(gap="large")
     load_container.subheader("Electricity demand")
     load_container.plotly_chart(
-    load_figure,
-    width="stretch",
-    config={"displayModeBar": False}
+        load_figure, width="stretch", config={"displayModeBar": False}
     )
-  
 
 
 with price_column:
     st.write("")
-    price_container = st.container(gap = "large")
+    price_container = st.container(gap="large")
     price_container.subheader("Day-ahead electricity prices")
 
     price_container.plotly_chart(
-    day_ahead_prices_figure,
-    width="stretch",
-    config={"displayModeBar": False},
-)
+        day_ahead_prices_figure,
+        width="stretch",
+        config={"displayModeBar": False},
+    )
 
 
 with price_statistics_column:
     show_price_statistics(statistics)
 
-generation_column, generation_statistics_column = st.columns(
-    [2, 1]
-)
+generation_column, generation_statistics_column = st.columns([2, 1])
 if "detailed_generation" not in st.session_state:
     st.session_state.detailed_generation = "Yes"
+
+
 def update_generation_plot():
     global generation_figure
-    generation_figure = create_generation_plot(generation_pivot, detailed=st.session_state.detailed_generation == "Yes")
+    generation_figure = create_generation_plot(
+        generation_pivot, detailed=st.session_state.detailed_generation == "Yes"
+    )
+
 
 with generation_column:
     st.subheader("Generation")
-    #detailed = st.radio(
+    # detailed = st.radio(
     #    "Detailed view",
     #    ["Yes", "No"],
     #    horizontal=True,
-    #)
-    #if detailed != st.session_state.detailed_generation:
+    # )
+    # if detailed != st.session_state.detailed_generation:
     #    st.session_state.detailed_generation = detailed
     #    update_generation_plot()
     st.plotly_chart(
-    generation_figure,
-    width="stretch",
-    config={"displayModeBar": False},
+        generation_figure,
+        width="stretch",
+        config={"displayModeBar": False},
     )
 
 with generation_statistics_column:
-    generation_statistics_container = st.container(border = True)
+    generation_statistics_container = st.container(border=True)
     generation_statistics_container.subheader("Daily Electricity Generation by Source")
     generation_statistics = read_data_from_oracle(
-        connection, "generation_statistics", selected_country_code, selected_date, 
+        connection,
+        "generation_statistics",
+        selected_country_code,
+        selected_date,
     )
     if generation_statistics is None or len(generation_statistics) == 0:
-        generation_statistics_container.write("No generation statistics available for this date and country.")
+        generation_statistics_container.write(
+            "No generation statistics available for this date and country."
+        )
     else:
         import matplotlib.pyplot as plt
-        #TODO calculate separately actual consumption
+
+        # TODO calculate separately actual consumption
         fig, ax = plt.subplots(figsize=(5, 5))
         fig = create_treemap(generation_statistics, generation_pivot)
         generation_statistics_container.plotly_chart(fig)

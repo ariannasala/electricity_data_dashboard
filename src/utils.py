@@ -1,5 +1,3 @@
-
-
 def get_generation_category(generation_type):
     from src.schemas import GENERATION_CATHEGORY_ORDER
 

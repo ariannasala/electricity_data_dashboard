@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
 
-def read_data_from_oracle(connection, table_name, country_code, date_start, date_end=None):
+
+def read_data_from_oracle(
+    connection, table_name, country_code, date_start, date_end=None
+):
     if date_end is None:
         date_end = date_start
     sql = f"""
@@ -36,13 +39,14 @@ def get_available_countries(connection, table_name):
 
     return available_countries
 
+
 def transform_generation_data(raw_generation):
     from src.utils import get_generation_category
 
     actual_consumption_indices = raw_generation[
-            raw_generation["GENERATION_TYPE"] == "Actual Consumption"
-        ].index
-        
+        raw_generation["GENERATION_TYPE"] == "Actual Consumption"
+    ].index
+
     generation = raw_generation.copy()
 
     generation.loc[actual_consumption_indices, "GENERATION"] = (
@@ -54,41 +58,57 @@ def transform_generation_data(raw_generation):
     generation["SOURCE"] = generation["SOURCE"].str.replace(
         "Actual Aggregated ", "", regex=False
     )
-    
-    #generation["CATHEGORY"] = generation["SOURCE"].apply(get_generation_category)
 
-    #generation_pivot = generation.pivot(
+    # generation["CATHEGORY"] = generation["SOURCE"].apply(get_generation_category)
+
+    # generation_pivot = generation.pivot(
     #    index="TIMESTAMP", columns=["SOURCE", "CATHEGORY"], values="GENERATION"
-    #).reset_index()
+    # ).reset_index()
 
     generation_pivot = generation.pivot(
-            index="TIMESTAMP", columns=["SOURCE"], values="GENERATION"
-        ).reset_index()
+        index="TIMESTAMP", columns=["SOURCE"], values="GENERATION"
+    ).reset_index()
 
     # we check the derivative to fill very short glitches in the dat
     columns_zero_sum = generation_pivot.drop(columns=["TIMESTAMP"]).columns[
-            generation_pivot.drop(columns=["TIMESTAMP"]).sum(axis=0) == 0
+        generation_pivot.drop(columns=["TIMESTAMP"]).sum(axis=0) == 0
     ]
     generation_pivot = generation_pivot.drop(columns=columns_zero_sum)
     generation_pivot = _resample_dataframe(generation_pivot)
 
     return generation_pivot
 
+
 def _resample_dataframe(df):
     frequency = pd.to_timedelta(df["TIMESTAMP"].diff().mode()).iloc[0]
     df = df.set_index("TIMESTAMP").resample(frequency).asfreq().reset_index()
 
     return df
+
+
 def get_data_for_dashboard(connection, selected_date, selected_country_code):
-    load = _resample_dataframe(read_data_from_oracle(
-        connection, "load_raw", selected_country_code, selected_date, 
-    ))
-    
-    day_ahead_prices = _resample_dataframe(read_data_from_oracle(
-        connection, "day_ahead_prices_raw", selected_country_code, selected_date, 
-    ))
-    generation = read_data_from_oracle(
-        connection, "generation_raw", selected_country_code, selected_date, 
+    load = _resample_dataframe(
+        read_data_from_oracle(
+            connection,
+            "load_raw",
+            selected_country_code,
+            selected_date,
+        )
     )
 
-    return load, day_ahead_prices, generation  
+    day_ahead_prices = _resample_dataframe(
+        read_data_from_oracle(
+            connection,
+            "day_ahead_prices_raw",
+            selected_country_code,
+            selected_date,
+        )
+    )
+    generation = read_data_from_oracle(
+        connection,
+        "generation_raw",
+        selected_country_code,
+        selected_date,
+    )
+
+    return load, day_ahead_prices, generation

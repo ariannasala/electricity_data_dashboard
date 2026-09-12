@@ -2,13 +2,15 @@ import os
 from datetime import datetime
 
 import pandas as pd
-from requests import HTTPError
 from entsoe import EntsoePandasClient
+from requests import HTTPError
 
 from src.schemas import COUNTRIES
 
 
-def download_electricity_data(countries: list[str], start_date: datetime, end_date: datetime):
+def download_electricity_data(
+    countries: list[str], start_date: datetime, end_date: datetime
+):
     """
     Downloads data from entsoe between start_date and end_date.
     Specifically, load, day_ahead_prices and generation. Generation is turned to the long format.
@@ -48,24 +50,24 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
         country_code = COUNTRIES[country].code
         timezone = COUNTRIES[country].timezone
         start = pd.Timestamp(
-                    year = start_date.year,
-                    month = start_date.month,
-                    day = start_date.day,
-                    hour = 0,
-                    minute = 0,
-                    second = 0,
-                tz=timezone,
-        )
-        end = pd.Timestamp(
-                year = end_date.year,
-                month = end_date.month,
-                day = end_date.day,
-                hour = 23,
-                minute = 59,
-                second = 59,
+            year=start_date.year,
+            month=start_date.month,
+            day=start_date.day,
+            hour=0,
+            minute=0,
+            second=0,
             tz=timezone,
         )
-        
+        end = pd.Timestamp(
+            year=end_date.year,
+            month=end_date.month,
+            day=end_date.day,
+            hour=23,
+            minute=59,
+            second=59,
+            tz=timezone,
+        )
+
         retries = 0
         data_downloaded = False
         while retries < 3 and data_downloaded == False:
@@ -83,7 +85,9 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
                 error = e
                 retries += 1
         if data_downloaded is False:
-            raise HTTPError("Could not download data from entsoe, last error: " + str(error))
+            raise HTTPError(
+                "Could not download data from entsoe, last error: " + str(error)
+            )
         # add country code to table
         load["country_code"] = country_code
         day_ahead_prices["country_code"] = country_code
@@ -114,7 +118,15 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
             0: "generation",
         }
     )
-    generation_long = generation_long[["timestamp", "country_code", "generation_source", "generation_type", "generation"]]
+    generation_long = generation_long[
+        [
+            "timestamp",
+            "country_code",
+            "generation_source",
+            "generation_type",
+            "generation",
+        ]
+    ]
     # we may have cathegories only for some countries, so we fill nans with zeros
     generation_long = generation_long.fillna(0)
     load = load.rename(
@@ -126,6 +138,8 @@ def download_electricity_data(countries: list[str], start_date: datetime, end_da
     )
     load = load[["timestamp", "country_code", "load"]].reset_index(drop=True)
 
-    day_ahead_prices = day_ahead_prices[["timestamp", "country_code", "day_ahead_prices"]].reset_index(drop=True)
+    day_ahead_prices = day_ahead_prices[
+        ["timestamp", "country_code", "day_ahead_prices"]
+    ].reset_index(drop=True)
 
     return load, day_ahead_prices, generation_long

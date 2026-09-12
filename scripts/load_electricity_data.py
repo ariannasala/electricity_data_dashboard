@@ -5,17 +5,19 @@ import pandas as pd
 from src.etl.download_electricity_data import download_electricity_data
 from src.etl.load_data_to_oracle import load_data_to_oracle
 from src.oracle_connection import create_oracle_connection
-from src.statistics.daily_statistics import calculate_price_statistics, calculate_generation_statistics
 from src.schemas import COUNTRIES
+from src.statistics.daily_statistics import (
+    calculate_generation_statistics,
+    calculate_price_statistics,
+)
 
 if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets
 
     os.environ["ENTSOE_API_KEY"] = secrets["ENTSOE_API_KEY"]
 
-countries =list(COUNTRIES.keys())
+countries = list(COUNTRIES.keys())
 # yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
-
 
 
 def load_electricity_data(global_start_date, global_end_date, countries):
@@ -53,21 +55,42 @@ def load_electricity_data(global_start_date, global_end_date, countries):
         )
         statistics = calculate_price_statistics(day_ahead_prices, generation_long)
         load_data_to_oracle(
-            cursor, connection, statistics, "prices_statistics", "prices_statistics_staging"
+            cursor,
+            connection,
+            statistics,
+            "prices_statistics",
+            "prices_statistics_staging",
         )
         generation_statistics = calculate_generation_statistics(generation_long)
 
-        load_data_to_oracle(cursor, connection, generation_statistics, "generation_statistics", "generation_statistics_staging", ["timestamp", "country_code", "generation_source", "cathegory"])
+        load_data_to_oracle(
+            cursor,
+            connection,
+            generation_statistics,
+            "generation_statistics",
+            "generation_statistics_staging",
+            ["timestamp", "country_code", "generation_source", "cathegory"],
+        )
 
     connection.close()
 
+
 if __name__ == "__main__":
     from datetime import datetime, timedelta
-    start_date = pd.to_datetime(os.environ.get("START_DATE")) if os.environ.get("START_DATE") else None
-    if not start_date:
-        start_date = (datetime.now().date() - timedelta(days=3))
 
-    end_date = pd.to_datetime(os.environ.get("END_DATE")).date() if os.environ.get("END_DATE") else None
+    start_date = (
+        pd.to_datetime(os.environ.get("START_DATE"))
+        if os.environ.get("START_DATE")
+        else None
+    )
+    if not start_date:
+        start_date = datetime.now().date() - timedelta(days=3)
+
+    end_date = (
+        pd.to_datetime(os.environ.get("END_DATE")).date()
+        if os.environ.get("END_DATE")
+        else None
+    )
     if not end_date:
-        end_date = (datetime.now().date() - timedelta(days=1))
+        end_date = datetime.now().date() - timedelta(days=1)
     load_electricity_data(start_date, end_date, countries)

@@ -27,14 +27,15 @@ def prepare_oracle_wallet() -> Path:
 
     return wallet_directory
 
+
 def create_oracle_connection():
 
     wallet_directory = prepare_oracle_wallet()
     return oracledb.connect(
-    config_dir=wallet_directory,
-    user=os.environ["ORACLE_USER"],
-    password=os.environ["ORACLE_PASSWORD"],
-    dsn=os.environ["ORACLE_DSN"],
-    wallet_location=wallet_directory,
-    wallet_password=os.environ["ORACLE_WALLET_PASSWORD"],
-)
+        config_dir=wallet_directory,
+        user=os.environ["ORACLE_USER"],
+        password=os.environ["ORACLE_PASSWORD"],
+        dsn=os.environ["ORACLE_DSN"],
+        wallet_location=wallet_directory,
+        wallet_password=os.environ["ORACLE_WALLET_PASSWORD"],
+    )
