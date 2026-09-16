@@ -78,8 +78,11 @@ def transform_generation_data(raw_generation):
 
 
 def _resample_dataframe(df):
-    frequency = pd.to_timedelta(df["TIMESTAMP"].diff().mode()).iloc[0]
-    df = df.set_index("TIMESTAMP").resample(frequency).asfreq().reset_index()
+    df = df.drop_duplicates()
+    if len(df) > 0:
+        frequency = pd.to_timedelta(df["TIMESTAMP"].diff().mode()).iloc[0]
+
+        df = df.set_index("TIMESTAMP").resample(frequency).asfreq().reset_index()
 
     return df
 
