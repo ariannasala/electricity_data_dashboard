@@ -1,10 +1,11 @@
+from datetime import time
+from warnings import warn
+
+import pandas as pd
 from entsoe.exceptions import NoMatchingDataError
 from requests import HTTPError
 
-from src.schemas import COUNTRIES, ColumnData
-from warnings import warn
-from datetime import time
-import pandas as pd
+from src.schemas import COUNTRIES
 
 
 def download_data_from_entsoe(

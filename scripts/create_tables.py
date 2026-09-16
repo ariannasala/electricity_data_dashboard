@@ -1,15 +1,14 @@
 import os
 
 from src.etl.create_tables import create_table
-from src.oracle_connection import create_oracle_connection
-
 from src.etl.tables import (
     DayAheadPricesTable,
+    GenerationStatisticsTable,
     GenerationTable,
     LoadTable,
     PriceStatisticsTable,
-    GenerationStatisticsTable,
 )
+from src.oracle_connection import create_oracle_connection
 
 ## INPUTS
 table_to_create = LoadTable()  # use the table you want to create

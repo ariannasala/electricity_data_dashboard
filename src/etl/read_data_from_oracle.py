@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -41,7 +40,6 @@ def get_available_countries(connection, table_name):
 
 
 def transform_generation_data(raw_generation):
-    from src.utils import get_generation_category
 
     actual_consumption_indices = raw_generation[
         raw_generation["GENERATION_TYPE"] == "Actual Consumption"

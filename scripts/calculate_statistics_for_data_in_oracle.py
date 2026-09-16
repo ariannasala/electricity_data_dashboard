@@ -1,12 +1,12 @@
-from src.daily_statistics import (
-    calculate_price_statistics,
-    calculate_generation_statistics,
-)
-from src.oracle_connection import create_oracle_connection
-from src.etl.read_data_from_oracle import read_data_from_oracle
-from src.etl.load_data_to_oracle import load_data_to_oracle
-
 import os
+
+from src.etl.load_data_to_oracle import load_data_to_oracle
+from src.etl.read_data_from_oracle import read_data_from_oracle
+from src.oracle_connection import create_oracle_connection
+from src.statistics.daily_statistics import (
+    calculate_generation_statistics,
+    calculate_price_statistics,
+)
 
 if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets

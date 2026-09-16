@@ -1,4 +1,5 @@
 import os
+
 from src.oracle_connection import create_oracle_connection
 
 if not os.environ.get("ENTSOE_API_KEY"):

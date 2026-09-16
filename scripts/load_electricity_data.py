@@ -4,13 +4,13 @@ import pandas as pd
 
 from src.etl import DOWNLOADABLE_TABLES
 from src.etl.load_data_to_oracle import load_data_to_oracle
+from src.etl.tables import GenerationStatisticsTable, PriceStatisticsTable
 from src.oracle_connection import create_oracle_connection
 from src.schemas import COUNTRIES
-from src.daily_statistics import (
+from src.statistics.daily_statistics import (
     calculate_generation_statistics,
     calculate_price_statistics,
 )
-from src.etl.tables import GenerationStatisticsTable, PriceStatisticsTable
 
 if not os.environ.get("ENTSOE_API_KEY"):
     from streamlit import secrets

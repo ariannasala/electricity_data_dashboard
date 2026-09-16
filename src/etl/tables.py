@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 from entsoe import EntsoePandasClient
+
 from src.schemas import ColumnData
 
 
