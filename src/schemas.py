@@ -18,3 +18,10 @@ COUNTRIES = {
 COUNTRY_CODES = {v.code: k for k, v in COUNTRIES.items()}
 
 GENERATION_CATHEGORY_ORDER = list(GENERATION_COLORS_PALETTE.keys())
+
+
+@dataclass
+class ColumnData:
+    name: str
+    data_type: type
+    primary_key: bool = False

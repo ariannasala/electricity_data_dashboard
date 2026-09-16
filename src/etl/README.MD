@@ -4,18 +4,8 @@ This data pipelines retrieves data from entso-e transparency platform, using ent
 
 ## Data model
 
-The data is stored in Oracle using separate tables for the main electricity-market
-datasets and derived statistics.
-
-| Table | Description |
-|---|---|
-| `load` | Electricity demand/load time series |
-| `generation` | Generation by production type |
-| `day_ahead_prices` | Day-ahead electricity prices |
-| `prices_statistics` | Derived daily price statistics |
-| `generation_statistics` | Derived generation statistics |
-
-The tables stores timestamps and the bidding zone code for the request.
+The data is stored in Oracle using separate tables for the main electricity-market datasets and derived statistics.
+See
 
 ## Configuration
 
@@ -70,3 +60,8 @@ docker compose up --build uploader
 
 ## Adding new countries
 To get data for a specific bidding zone, add a new CountryData object to [schemas file](../schemas.py), indicating the specific entso-e code found at https://github.com/EnergieID/entsoe-py/blob/master/entsoe/mappings.py.
+
+## Adding new tables
+1. Create the new table in [tables.py](./tables.py)
+2. Run [create_tables.py](../../scripts/create_tables.py) to create the table in Oracle
+3. If the data needs to be downloaded from entso-e, register it in [etl init](./__init__.py). In this way, it will be downloaded with the others in [load_data_to_oracle](../../scripts/load_data_to_oracle.py)

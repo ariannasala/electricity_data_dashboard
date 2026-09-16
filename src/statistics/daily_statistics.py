@@ -1,4 +1,6 @@
 import pandas as pd
+
+from src.etl.tables import PriceStatisticsTable
 from src.schemas import COUNTRIES, COUNTRY_CODES
 from src.utils import get_generation_category
 
@@ -97,6 +99,7 @@ def _calculate_basic_statistics(groupby, column_name):
 
 
 def calculate_price_statistics(prices, generation_data):
+    price_statistics_table = PriceStatisticsTable()
     # convert to lowercase to make this work with the data read from oracle as well as the data read from entsoe
     prices.columns = prices.columns.str.lower()
     generation_data.columns = generation_data.columns.str.lower()
@@ -114,7 +117,6 @@ def calculate_price_statistics(prices, generation_data):
     minimum_price_hours = []
     for country_code, country_prices in prices.groupby("country_code"):
         # we need to resample to hourly to get the right number of negative hours
-        timezone_name = COUNTRIES[COUNTRY_CODES[country_code]].timezone
         local_timestamp_index = pd.DatetimeIndex(
             country_prices["timestamp_local"].tolist(), name="timestamp_local"
         )
@@ -241,25 +243,7 @@ def calculate_price_statistics(prices, generation_data):
         axis=1,
     )
     final_dataframe = dataframe.reset_index().rename(columns={"day": "timestamp"})[
-        [
-            "timestamp",
-            "country_code",
-            "average",
-            "maximum",
-            "minimum",
-            "standard_deviation",
-            "maximum_price_hour",
-            "minimum_price_hour",
-            "p90",
-            "p10",
-            "p95",
-            "p05",
-            "p99",
-            "p01",
-            "number_negative_hours",
-            "solar_capture_price",
-            "wind_capture_price",
-        ]
+        price_statistics_table.columns_names
     ]
 
     final_dataframe["timestamp"] = pd.to_datetime(final_dataframe["timestamp"])

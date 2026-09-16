@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.statistics.daily_statistics import (
+from src.daily_statistics import (
     calculate_price_statistics,
     calculate_generation_statistics,
 )

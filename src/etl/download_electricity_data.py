@@ -1,52 +1,26 @@
-import os
-from datetime import datetime
-
-import pandas as pd
-from entsoe import EntsoePandasClient
+from entsoe.exceptions import NoMatchingDataError
 from requests import HTTPError
 
-from src.schemas import COUNTRIES
+from src.schemas import COUNTRIES, ColumnData
+from warnings import warn
+from datetime import time
+import pandas as pd
 
 
-def download_electricity_data(
-    countries: list[str], start_date: datetime, end_date: datetime
+def download_data_from_entsoe(
+    data_name,
+    table_columns,
+    download_function,
+    countries: str | list[str],
+    start_date,
+    end_date,
 ):
-    """
-    Downloads data from entsoe between start_date and end_date.
-    Specifically, load, day_ahead_prices and generation. Generation is turned to the long format.
-
-    Parameters
-    -----------
-    coutry_code : list[str] | str
-        List of country code to download data for - or a single country code
-    start_date : datetime
-        The start date to download data from.
-    end_date : datetime
-        The end date to download data from.
-
-    Returns
-    -----------
-    load : pd.DataFrame
-        The load data.
-    day_ahead_prices : pd.DataFrame
-        The day ahead prices.
-    generation : pd.DataFrame
-        The generation data.
-    """
     if isinstance(countries, str):
         countries = [countries]
-
+    total_data = []
     for country in countries:
         if country not in COUNTRIES:
             raise ValueError(f"Country {country} not found in COUNTRIES")
-
-    client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"])
-
-    total_loads = []
-    total_day_ahead_prices = []
-    total_generation = []
-
-    for country in countries:
         country_code = COUNTRIES[country].code
         timezone = COUNTRIES[country].timezone
         start = pd.Timestamp(
@@ -72,74 +46,42 @@ def download_electricity_data(
         data_downloaded = False
         while retries < 3 and data_downloaded == False:
             try:
-                day_ahead_prices = pd.DataFrame(
-                    client.query_day_ahead_prices(country_code, start=start, end=end),
-                    columns=["day_ahead_prices"],
-                )
-                load = client.query_load(country_code, start=start, end=end)
-
-                generation = client.query_generation(country_code, start=start, end=end)
+                data = download_function(country_code, start=start, end=end)
 
                 data_downloaded = True
-            except HTTPError as e:
+            except (HTTPError, NoMatchingDataError) as e:
                 error = e
                 retries += 1
+
+                match error:
+                    case NoMatchingDataError():
+                        warn(
+                            f"No matching {data_name}data for country {country} between {start_date} and {end_date}"
+                        )
+
+                    case HTTPError():
+                        timeout = e.response.headers.get("Retry-After")
+                        if timeout is not None:
+                            time.sleep(int(timeout))
+                        else:
+                            time.sleep(10)
+
         if data_downloaded is False:
-            raise HTTPError(
-                "Could not download data from entsoe, last error: " + str(error)
+            warn(
+                f"Could not download {data_name} data from entsoe between {start_date} and {end_date}, last error: "
+                + str(error)
+            )
+
+        if isinstance(data, pd.Series):
+            data = pd.DataFrame(
+                data,
+                columns=[col.name for col in table_columns if not col.primary_key],
             )
         # add country code to table
-        load["country_code"] = country_code
-        day_ahead_prices["country_code"] = country_code
-        generation["country_code"] = country_code
+        data["country_code"] = country_code
 
-        total_loads.append(load)
-        total_day_ahead_prices.append(day_ahead_prices)
-        total_generation.append(generation)
+        total_data.append(data)
+    final_data = pd.concat(total_data)
+    final_data["timestamp"] = final_data.index
 
-    load = pd.concat(total_loads)
-    day_ahead_prices = pd.concat(total_day_ahead_prices)
-    generation = pd.concat(total_generation)
-
-    # add timestamp column
-    load["timestamp"] = load.index
-    day_ahead_prices["timestamp"] = day_ahead_prices.index
-    generation["timestamp"] = generation.index
-
-    generation_long = (
-        generation.set_index(["timestamp", "country_code"]).stack([0, 1]).reset_index()
-    )
-    generation_long = generation_long.rename(
-        columns={
-            "timestamp": "timestamp",
-            "country_code": "country_code",
-            "level_2": "generation_source",
-            "level_3": "generation_type",
-            0: "generation",
-        }
-    )
-    generation_long = generation_long[
-        [
-            "timestamp",
-            "country_code",
-            "generation_source",
-            "generation_type",
-            "generation",
-        ]
-    ]
-    # we may have cathegories only for some countries, so we fill nans with zeros
-    generation_long = generation_long.fillna(0)
-    load = load.rename(
-        columns={
-            "timestamp": "timestamp",
-            "country_code": "country_code",
-            "Actual Load": "load",
-        }
-    )
-    load = load[["timestamp", "country_code", "load"]].reset_index(drop=True)
-
-    day_ahead_prices = day_ahead_prices[
-        ["timestamp", "country_code", "day_ahead_prices"]
-    ].reset_index(drop=True)
-
-    return load, day_ahead_prices, generation_long
+    return final_data
