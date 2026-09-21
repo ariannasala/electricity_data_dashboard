@@ -18,7 +18,6 @@ class DataTable:
 
 class PrimaryTable(DataTable, ABC):
     def __init__(self, data_name, columns_data):
-        self.client = EntsoePandasClient()
         super().__init__(data_name, columns_data)
         self.table_name = data_name + "_raw"
 
@@ -38,13 +37,14 @@ class LoadTable(PrimaryTable):
             ],
         )
 
-    def download(self, countries: str | list[str], start_date, end_date):
+    def download(self, countries: str | list[str], start_date, end_date, client=None):
         from src.etl.download_electricity_data import download_data_from_entsoe
 
+        client = client or EntsoePandasClient()
         load = download_data_from_entsoe(
             self.data_name,
             self.columns,
-            self.client.query_load,
+            client.query_load,
             countries,
             start_date,
             end_date,
@@ -75,13 +75,14 @@ class DayAheadPricesTable(PrimaryTable):
             ],
         )
 
-    def download(self, countries: str | list[str], start_date, end_date):
+    def download(self, countries: str | list[str], start_date, end_date, client=None):
         from src.etl.download_electricity_data import download_data_from_entsoe
 
+        client = client or EntsoePandasClient()
         prices = download_data_from_entsoe(
             self.data_name,
             self.columns,
-            self.client.query_day_ahead_prices,
+            client.query_day_ahead_prices,
             countries,
             start_date,
             end_date,
@@ -114,13 +115,14 @@ class GenerationTable(PrimaryTable):
             ],
         )
 
-    def download(self, countries: str | list[str], start_date, end_date):
+    def download(self, countries: str | list[str], start_date, end_date, client=None):
         from src.etl.download_electricity_data import download_data_from_entsoe
 
+        client = client or EntsoePandasClient()
         generation = download_data_from_entsoe(
             self.data_name,
             self.columns,
-            self.client.query_generation,
+            client.query_generation,
             countries,
             start_date,
             end_date,

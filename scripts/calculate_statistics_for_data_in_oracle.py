@@ -2,6 +2,10 @@ import os
 
 from src.etl.load_data_to_oracle import load_data_to_oracle
 from src.etl.read_data_from_oracle import read_data_from_oracle
+from src.etl.tables import (
+    GenerationStatisticsTable,
+    PriceStatisticsTable,
+)
 from src.oracle_connection import create_oracle_connection
 from src.statistics.daily_statistics import (
     calculate_generation_statistics,
@@ -44,20 +48,15 @@ for country_code in country_codes:
         )
         df = calculate_price_statistics(prices, generation)
         load_data_to_oracle(
-            cursor,
             connection,
+            PriceStatisticsTable(),
             df,
-            price_statistics_table,
-            f"{price_statistics_table}_staging",
         )
 
     if load_generation:
         df = calculate_generation_statistics(generation)
         load_data_to_oracle(
-            cursor,
             connection,
+            GenerationStatisticsTable(),
             df,
-            generation_statistics_table,
-            f"{generation_statistics_table}_staging",
-            primary_keys=["timestamp", "country_code", "generation_source"],
         )
