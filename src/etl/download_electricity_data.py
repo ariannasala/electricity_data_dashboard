@@ -1,5 +1,5 @@
-from datetime import time
 from warnings import warn
+from time import sleep
 
 import pandas as pd
 from entsoe.exceptions import NoMatchingDataError
@@ -63,9 +63,9 @@ def download_data_from_entsoe(
                     case HTTPError():
                         timeout = e.response.headers.get("Retry-After")
                         if timeout is not None:
-                            time.sleep(int(timeout))
+                            sleep(int(timeout))
                         else:
-                            time.sleep(10)
+                            sleep(10)
 
         if data_downloaded is False:
             warn(
