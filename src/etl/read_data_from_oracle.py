@@ -78,7 +78,6 @@ def transform_generation_data(raw_generation):
 
 
 def _resample_dataframe(df):
-    df = df.drop_duplicates()
     if len(df) > 0:
         frequency = pd.to_timedelta(df["TIMESTAMP"].diff().mode()).iloc[0]
 

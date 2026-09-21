@@ -58,20 +58,3 @@ def load_data_to_oracle(
 
     cursor.execute(merge_sql)
     connection.commit()
-
-    delete_duplicates_sql = f"""
-    DELETE FROM {table.table_name}
-    WHERE ROWID IN (
-        SELECT rid FROM (
-            SELECT ROWID as rid,
-                ROW_NUMBER() OVER (
-                    PARTITION BY {insert_columns}
-                    ORDER BY ROWID ASC             
-                ) AS row_num
-            FROM {table.table_name}
-        )
-        WHERE row_num > 1
-    )
-    """
-    cursor.execute(delete_duplicates_sql)
-    connection.commit()
