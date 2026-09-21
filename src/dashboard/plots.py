@@ -7,11 +7,11 @@ GENERATION_COLORS_PALETTE = {
     "wind": px.colors.sequential.Greens,
     "solar": px.colors.sequential.YlOrBr,
     "storage": px.colors.sequential.Purp,
-    "coal": px.colors.sequential.Greys,
     "hydro": px.colors.sequential.Blues,
-    "gas": px.colors.sequential.solar,
+    "gas": px.colors.sequential.Brwnyl,
+    "coal": px.colors.sequential.Greys,
     "nuclear": px.colors.sequential.Agsunset,
-    "biomass": px.colors.sequential.Purples,
+    "biomass": px.colors.sequential.algae,
     "oil": px.colors.sequential.Oranges,
     "other": px.colors.sequential.amp,
 }
@@ -251,7 +251,7 @@ def create_treemap(generation_statistics, generation):
     if "Hydro Pumped Storage" in generation_statistics["GENERATION_SOURCE"].unique():
         note_text.append("Hydro Pumped Storage is classified as storage")
     if "Fossil Coal-derived gas" in generation_statistics["GENERATION_SOURCE"].unique():
-        note_text.append("Fossil Coal-Derived Gas is classified as coal")
+        note_text.append("Fossil Coal-Derived Gas is classified as gas")
 
     if len(note_text) > 0:
         fig.add_annotation(
@@ -261,7 +261,7 @@ def create_treemap(generation_statistics, generation):
             x=0,
             y=-0.15,  # x=0 aligns to left, negative y pushes it below the x-axis
             showarrow=False,  # Remove the pointer arrow
-            font=dict(size=10, color="gray"),  # Make the text small and muted
+            font=dict(size=12, color="gray"),  # Make the text small and muted
             align="left",  # Align text internally if it spans multiple lines
         )
     return fig
